@@ -1,0 +1,59 @@
+/* Light */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-Light.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-Light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Regular */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-Regular.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Italic */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-Italic.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-Italic.woff") format("woff");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Medium */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-Medium.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-Bold.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold Italic */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DM_Sans/DM_Sans-BoldItalic.woff2") format("woff2"),
+       url("/fonts/DM_Sans/DM_Sans-BoldItalic.woff") format("woff");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
