@@ -27,8 +27,7 @@ const handleError = (
 };
 
 export type LoginReqForm = {
-  Language: string;
-  Username: string;
+  EmailOrUserName: string;
   Password: string;
 };
 
@@ -39,7 +38,7 @@ export type TAuthState = {
   userInfoById?: any;
   /** actions */
   logout: () => void;
-  login: (params: any, pushPage: any) => Promise<void>;
+  login: (params: LoginReqForm, pushPage: any) => Promise<void>;
   setLoading: (isLoading: boolean) => void;
   refreshTokenReq: () => void;
   getUserById: (id: string) => void;
@@ -67,7 +66,7 @@ const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
     signOut();
   },
   login: async (data: LoginReqForm, pushPage) => {
-    const { setLoading,} = get() as TAuthState;
+    const { setLoading} = get() as TAuthState;
     setLoading(true);
     try {
       const response: AxiosResponse = await loginService(data);
@@ -82,10 +81,10 @@ const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
       const res = await signIn("credentials", {
         refreshToken: response?.data?.data?.refreshToken,
         token: response?.data?.data?.token,
-        email: data.Username,
+        email: data.EmailOrUserName,
         password: data.Password,
         redirect: true,
-        callbackUrl: "/friends",
+        callbackUrl: "/",
       });
 
       set((state: TAuthState) => ({
