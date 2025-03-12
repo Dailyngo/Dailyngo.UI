@@ -1,50 +1,75 @@
-import { getToken } from "next-auth/jwt";
-import { NextRequestWithAuth, withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { getToken } from 'next-auth/jwt';
+import { NextRequestWithAuth, withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
 
 export default withAuth(
-  async function middleware(req: NextRequestWithAuth) {
-    const token = await getToken({ req });
-    console.log("token", token);
-    const isAuth = !!token;
-    const isAuthPage =
-      req.nextUrl.pathname.startsWith("/login") ||
-      req.nextUrl.pathname.startsWith("/register");
+	async function middleware(req: NextRequestWithAuth) {
+		const token = await getToken({ req });
+		const isAuth = !!token;
+		const isAuthPage =
+			req.nextUrl.pathname.startsWith('/login') ||
+			req.nextUrl.pathname.startsWith('/register');
 
-    if (isAuthPage) {
-      if (isAuth) {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
+		const isRegistered = req.cookies.get('isRegistered')?.value == 'true';
+		const isEmailVerified =
+			req.cookies.get('isEmailConfirmed')?.value == 'true';
 
-      return null;
-    }
-    if (isAuth && req.nextUrl.pathname.startsWith("/login")) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+		const isRegisteredOrEmailConfirmPage =
+			req.nextUrl.pathname.startsWith('/verifyEmail') ||
+			req.nextUrl.pathname.startsWith('/registerDetail');
 
-    if (!isAuth) {
-      let from = req.nextUrl.pathname;
-      if (req.nextUrl.search) {
-        from += req.nextUrl.search;
-      }
+		if (!isRegisteredOrEmailConfirmPage && isAuth) {
+			if (!isEmailVerified) {
+				console.log('email nozt verified');
+				return NextResponse.redirect(new URL('/verifyEmail', req.url));
+			} else if (!isRegistered) {
+				console.log('not registered');
+				return NextResponse.redirect(
+					new URL('/registerDetail', req.url)
+				);
+			}
+		} else {
+			if (isEmailVerified && isRegistered && isAuth) {
+				return NextResponse.redirect(new URL('/', req.url));
+			}
 
-      return NextResponse.redirect(
-        //  new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-         new URL(`/login`, req.url)
-      );
-    }
+			if (isAuth) return null;
+		}
 
-    // return roleAuth(req);
-  },
-  {
-    callbacks: {
-      async authorized() {
-        return true;
-      },
-    },
-  }
+		if (isAuthPage) {
+			if (isAuth) {
+				return NextResponse.redirect(new URL('/', req.url));
+			}
+
+			return null;
+		}
+		if (isAuth && req.nextUrl.pathname.startsWith('/login')) {
+			return NextResponse.redirect(new URL('/', req.url));
+		}
+
+		if (!isAuth) {
+			let from = req.nextUrl.pathname;
+			if (req.nextUrl.search) {
+				from += req.nextUrl.search;
+			}
+
+			return NextResponse.redirect(
+				//  new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+				new URL(`/login`, req.url)
+			);
+		}
+
+		// return roleAuth(req);
+	},
+	{
+		callbacks: {
+			async authorized() {
+				return true;
+			}
+		}
+	}
 );
 
 export const config = {
-  matcher: "/((?!images).*)",
+	matcher: '/((?!images).*)'
 };
