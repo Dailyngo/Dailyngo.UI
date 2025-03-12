@@ -26,7 +26,7 @@ export default function RootLayout({
   const [loading, setLoading] = useState<boolean>(true);
   const { data: session } = useSession();
   const router = useRouter();
-  const { addMessageForUser } = useStore();
+  const { addMessageForUser, isEmailVerified, isRegistered } = useStore();
 
   const isAuth =
     typeof window !== "undefined" && localStorage.getItem("isAuth");
@@ -35,32 +35,31 @@ export default function RootLayout({
   //    setTimeout(() => setLoading(false), 1000);
   //  }, []);
 
-
   return (
     <div className="dark:bg-boxdark-2 dark:text-bodydark">
-      
-        <div className="flex h-screen overflow-hidden">
-          {/* <!-- ===== Sidebar Start ===== --> */}
-          {/* <!-- ===== Sidebar End ===== --> */}
 
-          {/* <!-- ===== Content Area Start ===== --> */}
-          <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            {/* <!-- ===== Header Start ===== --> */}
-            {/* <!-- ===== Header End ===== --> */}
+      <div className="flex h-screen overflow-hidden">
+        {/* <!-- ===== Sidebar Start ===== --> */}
+        {/* <!-- ===== Sidebar End ===== --> */}
 
-            {/* <!-- ===== Main Content Start ===== --> */}
-            <main className="flex-1">
-              {/* <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10"> */}
-              <div className="mx-auto max-w-screen-2xl min-w-full">
+        {/* <!-- ===== Content Area Start ===== --> */}
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          {/* <!-- ===== Header Start ===== --> */}
+          {/* <!-- ===== Header End ===== --> */}
 
-                {children}
-                <FriendlyMessage />
-              </div>
-            </main>
+          {/* <!-- ===== Main Content Start ===== --> */}
+          <main className="flex-1">
+            {/* <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10"> */}
+            <div className="mx-auto max-w-screen-2xl min-w-full">
 
-          </div>
-         </div>
-      
+              {children}
+              <FriendlyMessage />
+            </div>
+          </main>
+
+        </div>
+      </div>
+
     </div>
   );
 }
