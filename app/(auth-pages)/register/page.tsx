@@ -5,23 +5,42 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/store";
 import Link from "next/link";
 import Image from "next/image";
+import { registerService } from "@/services";
+import { AxiosResponse } from "@/services/types";
+import { ERRORS } from "@/store/slices/errorSlice";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    surname: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    name: "sdfsd",
+    surname: "sdfs",
+    userName: "sdfs",
+    email: "admin@smurtplug.com",
+    password: "sdfsd",
+    confirmPassword: "sdfsdf",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const { setErrorConfirmInfoModal } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Register işlemleri burada yapılacak
+    console.log("formData", formData);
+    
+    try {
+      const response: AxiosResponse = await registerService(formData);
+      const ss = response.data?.data?.messages;
+      console.log("aaa", ss);
+    } catch (error : any) {
+      console.log("error", error.response.data.messages);
+      setErrorConfirmInfoModal(
+        ERRORS.GENERIC_INFO_AND_ERRORS, 
+        error.response.data.messages, 
+        "Hata", 
+        "error",
+        () => console.log("Tamam butonuna basıldı!")
+      );
+	  } 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,21 +90,6 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Kullanıcı Adı
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 E-posta
               </label>
@@ -95,6 +99,21 @@ export default function RegisterPage() {
                 type="email"
                 required
                 value={formData.email}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Kullanıcı Adı
+              </label>
+              <input
+                id="userName"
+                name="userName"
+                type="text"
+                required
+                value={formData.userName}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
@@ -143,10 +162,12 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   required
+                  
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -193,3 +214,7 @@ export default function RegisterPage() {
     </div>
   );
 }
+function setError(GENERIC_INFO_AND_ERRORS: any, arg1: { errorMessage: any; errorTitle: string; type: string; }) {
+  throw new Error("Function not implemented.");
+}
+

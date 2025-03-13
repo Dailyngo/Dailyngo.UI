@@ -7,6 +7,7 @@ import { useStore } from "@/store";
 import Link from "next/link";
 import Image from "next/image";
 import { Spinner } from "@material-tailwind/react";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("admin@dailygno.com");
@@ -107,7 +108,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            {loading ? <PulseLoader color="#ffffff" /> : "Giriş Yap"}
+            {loading ? <Icon icon="line-md:loading-loop" width="24" height="24" />: "Giriş Yap"}
           </button>
 
           <p className="text-center text-sm text-gray-600">

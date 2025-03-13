@@ -1,4 +1,6 @@
+"use client";
 
+import FriendlyMessage from "@/components/FriendlyMessage";
 import Image from "next/image";
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -19,5 +21,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
       {/* Sağ taraf - Register Formu */}
       {children}
+      <FriendlyMessage />
     </div>)
 }

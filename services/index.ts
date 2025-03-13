@@ -9,7 +9,7 @@ import { ApiRequest, cdnRequest, refreshTokenInstance } from './request';
 /** Auth */
 export const loginService: IRequestModel = (data) =>
 	cdnRequest.post(endpoints.getToken(), data);
-export const registerServive: IRequestModel = (data) =>
+export const registerService: IRequestModel = (data) =>
 	cdnRequest.post(endpoints.register(), data);
 
 export const refreshTokenService: IRequestModel = (data) =>
