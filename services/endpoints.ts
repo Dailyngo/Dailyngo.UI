@@ -4,6 +4,7 @@ export default {
 	/** auth  */
 	getToken: () => '/api/auth/login',
 	register: () => '/api/auth/register',
+	verifyEmail: () => '/api/auth/verify-email',
 	getUserInfoById: (id: string) => `/api/auth/User/${id}`,
 	getRefreshToken: () => `/api/Auth/refresh-token`,
 	apiReqWithQuery: (data: any) =>
