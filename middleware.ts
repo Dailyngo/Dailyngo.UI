@@ -1,6 +1,9 @@
 import { getToken } from 'next-auth/jwt';
 import { NextRequestWithAuth, withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import axios, { AxiosResponse } from 'axios';
+import endpoints from './services/endpoints';
+import { ENVIRONMENT } from './configurations';
 
 export default withAuth(
 	async function middleware(req: NextRequestWithAuth) {
@@ -10,30 +13,67 @@ export default withAuth(
 			req.nextUrl.pathname.startsWith('/login') ||
 			req.nextUrl.pathname.startsWith('/register');
 
-		const isRegistered = req.cookies.get('isRegistered')?.value == 'true';
-		const isEmailVerified =
-			req.cookies.get('isEmailConfirmed')?.value == 'true';
+		if(isAuth){
+			try {
+				const axiosInstance = axios.create({
+					baseURL: ENVIRONMENT.baseURL,
+					headers: {
+						Authorization: token ? `Bearer ${token.token}` : undefined
+					}
+				});
+				const response: AxiosResponse = await axiosInstance.get(endpoints.userLoginInfo());
+				const isRegistered = response.data.data.isRegistered;
+				const isEmailVerified = response.data.data.isEmailConfirmed;
+				const currentPath = req.nextUrl.pathname;
+				
+				// 1. Önce kullanıcının bulunduğu sayfaya göre kontrol yap
+				if (currentPath.startsWith("/verifyEmail")) {
+					if (isEmailVerified) {
+					// Zaten doğrulanmışsa ana sayfaya yönlendir
+						return NextResponse.redirect(new URL("/", req.url));
+					}
+					// Doğrulama sayfasında ve doğrulanmamışsa izin ver
+					return null;
+				}
 
-		const isRegisteredOrEmailConfirmPage =
-			req.nextUrl.pathname.startsWith('/verifyEmail') ||
-			req.nextUrl.pathname.startsWith('/registerDetail');
-
-		if (!isRegisteredOrEmailConfirmPage && isAuth) {
-			if (!isEmailVerified) {
-				console.log('email nozt verified');
-				return NextResponse.redirect(new URL('/verifyEmail', req.url));
-			} else if (!isRegistered) {
-				console.log('not registered');
-				return NextResponse.redirect(
-					new URL('/registerDetail', req.url)
-				);
-			}
-		} else {
-			if (isEmailVerified && isRegistered && isAuth) {
-				return NextResponse.redirect(new URL('/', req.url));
-			}
-
-			if (isAuth) return null;
+				// 2. Gerekli doğrulamaları yap
+				if (!isEmailVerified) {
+					console.log("Email not verified - redirecting");
+					return NextResponse.redirect(new URL("/verifyEmail", req.url));
+				}
+				
+				if (currentPath.startsWith("/registerDetail")) {
+					if (isRegistered) {
+					// Zaten kayıt yapmışsa ana sayfaya yönlendir
+						return NextResponse.redirect(new URL("/", req.url));
+					}
+					// Kayıt sayfasında ve kayıtsızsa izin ver
+					return null;
+				}
+				
+				if (!isRegistered) {
+					console.log("Not registered - redirecting");
+					return NextResponse.redirect(
+						new URL("/registerDetail", req.url)
+					);
+				}
+				
+				return null;
+			} catch (error : any) {
+				console.log("error", error);
+				if(error.status == 401){
+					console.log("error", isAuthPage);
+					if (!isAuthPage) {
+						const redirectUrl = new URL('/login', req.url);
+						const response = NextResponse.redirect(redirectUrl);
+						
+						// Cookie'leri direkt sil
+						response.cookies.delete('next-auth.session-token');
+						response.cookies.delete('next-auth.csrf-token');
+						return response;
+					}
+				}
+			} 
 		}
 
 		if (isAuthPage) {

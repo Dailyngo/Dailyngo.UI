@@ -1,6 +1,6 @@
 import endpoints from '@/services/endpoints';
 import { IRequestModel } from '@/services/types';
-import { ApiRequest, cdnRequest, refreshTokenInstance } from './request';
+import { ApiRequest, cdnRequest, refreshTokenInstance} from './request';
 
 /**
  * @param {{id?: string, data?: D, config?: AxiosRequestConfig}}
@@ -13,6 +13,8 @@ export const registerService: IRequestModel = (data) =>
 	cdnRequest.post(endpoints.register(), data);
 export const verifyEmailService: IRequestModel = (data) =>
 	ApiRequest.post(endpoints.verifyEmail(), data);
+export const sendVerificationEmail: IRequestModel = () =>
+	ApiRequest.get(endpoints.sendVerificationEmail());
 
 export const refreshTokenService: IRequestModel = (data) =>
 	refreshTokenInstance.post(endpoints.getRefreshToken(), data);

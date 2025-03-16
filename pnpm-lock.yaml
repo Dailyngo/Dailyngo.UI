@@ -59,6 +59,9 @@ importers:
       next-auth:
         specifier: ^4.24.8
         version: 4.24.10(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next-client-cookies:
+        specifier: ^2.0.1
+        version: 2.0.1(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1341,6 +1344,10 @@ packages:
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
 
+  js-cookie@3.0.5:
+    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
+    engines: {node: '>=14'}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -1511,6 +1518,12 @@ packages:
         optional: true
       nodemailer:
         optional: true
+
+  next-client-cookies@2.0.1:
+    resolution: {integrity: sha512-iut6Q+vc+2dfnaFVgAvb2Hsch872JO2r08LNoJ/bF8Gqi+zANoGqOL+TJLBq163GqEwjtGGEcm6DUzo5+5Za8g==}
+    peerDependencies:
+      next: '>= 15.0.0'
+      react: '>= 16.8.0'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -3868,6 +3881,8 @@ snapshots:
 
   jose@4.15.9: {}
 
+  js-cookie@3.0.5: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@4.1.0:
@@ -4029,6 +4044,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       uuid: 8.3.2
+
+  next-client-cookies@2.0.1(next@14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+    dependencies:
+      js-cookie: 3.0.5
+      next: 14.2.15(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
 
   next-themes@0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
