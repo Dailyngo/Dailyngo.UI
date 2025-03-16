@@ -86,9 +86,7 @@ const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
 				'refreshToken',
 				response?.data?.data?.refreshToken
 			);
-			document.cookie = `isRegistered=${response?.data?.data?.isRegistered}; path=/;`;
-			document.cookie = `isEmailConfirmed=${response?.data?.data?.isEmailVerified}; path=/;`;
-
+			
 			const from = new URLSearchParams(window.location.search).get(
 				'from'
 			);
