@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./EveryDaily.UI/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/dailyngo.ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/dailyngo.ui:${{ github.run_number }}
 
@@ -54,7 +54,7 @@ jobs:
           docker rm dailyngo-ui || true
           docker run -d \
             --name dailyngo-ui \
-            -p 3000:80 \
+            -p 3000:3000 \
             --hostname dailyngo.ui \
             --network dailyngo \
             --restart always \
