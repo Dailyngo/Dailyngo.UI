@@ -11,8 +11,8 @@ import trTr from "antd/lib/locale/tr_TR";
 const inter = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Template Ui",
-  description: "Template Ui",
+  title: "DailyNgo",
+  description: "dailyngo.com",
 };
 
 export default function RootLayout({
