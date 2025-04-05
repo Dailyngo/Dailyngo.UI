@@ -13,6 +13,9 @@ const inter = DM_Sans({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DailyNgo",
   description: "dailyngo.com",
+  icons: {
+    icon: "/favicon.ico",
+  }
 };
 
 export default function RootLayout({
