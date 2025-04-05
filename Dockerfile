@@ -5,18 +5,14 @@ FROM node:22.6.0-slim AS build_image
 WORKDIR /app
 
 # package.json ve pnpm-lock.yaml dosyalarını kopyala
-COPY package.json pnpm-lock.yaml .env ./
-
-# Çevresel değişkeni ayarla
-ARG APP_ENV
-ENV APP_ENV=${APP_ENV}
+COPY package.json pnpm-lock.yaml .env.prod ./
 
 # pnpm ile bağımlılıkları kur
 RUN npm install -g pnpm && pnpm install --frozen-lockfile 
 
 # Tüm dosyaları kopyala ve uygulamayı derle
 COPY . .
-RUN pnpm build
+RUN pnpm build:prod
 
 # Çalışma aşaması için hafif Node.js alpine imajını kullan
 FROM node:22.6.0-alpine
@@ -33,14 +29,10 @@ COPY --from=build_image /app/pnpm-lock.yaml ./
 COPY --from=build_image /app/node_modules ./node_modules/
 COPY --from=build_image /app/.next ./.next
 COPY --from=build_image /app/public ./public
-COPY --from=build_image /app/.env .env
-
-# Çevresel değişkeni ayarla
-ARG APP_ENV
-ENV APP_ENV=${APP_ENV}
+COPY --from=build_image /app/.env.prod .env.prod
 
 # Portu aç
 EXPOSE 3000
 
 # Uygulamayı başlat
-CMD ["pnpm", "start"]
+CMD ["sh", "-c", "pnpm start:prod"]
