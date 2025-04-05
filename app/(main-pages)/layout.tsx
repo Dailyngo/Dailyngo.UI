@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import "../global.css";
 import "../satoshi.css";
+import CustomNavbar from "@/app/(main-pages)/customNavbar";
 
 export default function RootLayout({
   children,
@@ -36,30 +37,10 @@ export default function RootLayout({
   //  }, []);
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
-
-      <div className="flex h-screen overflow-hidden">
-        {/* <!-- ===== Sidebar Start ===== --> */}
-        {/* <!-- ===== Sidebar End ===== --> */}
-
-        {/* <!-- ===== Content Area Start ===== --> */}
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          {/* <!-- ===== Header Start ===== --> */}
-          {/* <!-- ===== Header End ===== --> */}
-
-          {/* <!-- ===== Main Content Start ===== --> */}
-          <main className="flex-1">
-            {/* <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10"> */}
-            <div className="mx-auto max-w-screen-2xl min-w-full">
-
-              {children}
-              <FriendlyMessage />
-            </div>
-          </main>
-
-        </div>
-      </div>
-
-    </div>
+		<div className="h-screen bg-white">
+      <CustomNavbar />
+			{children}
+			<FriendlyMessage />
+		</div>
   );
 }

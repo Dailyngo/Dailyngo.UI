@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       {/* Sol taraf - Görsel Bölümü */}
       <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative">
         <Image
-          src="/images/_logo.png"
+          src="/images/logo.png"
           alt="Register"
           fill
         />
