@@ -2,7 +2,6 @@ import { signOut } from "next-auth/react";
 import { StateCreator } from "zustand";
 import { ERRORS } from "../errorSlice";
 import { AxiosResponse } from "@/services/types";
-import { getFriendsService } from "@/services";
 
 const handleError = (
   err: any,
@@ -28,7 +27,7 @@ export type TFriendsState = {
   friendList: any[];
   /** actions */
   setLoading: (isLoading: boolean) => void;
-  getFriends: () => void;
+  // getFriends: () => void;
 };
 
 const friendsSlice: StateCreator<TFriendsState> = (set, get) => ({
@@ -40,26 +39,26 @@ const friendsSlice: StateCreator<TFriendsState> = (set, get) => ({
       ...state,
       friendsLoading: isLoading,
     }));
-  },
+  }
   /** actions */
-  getFriends: async () => {
-    const { setLoading } = get() as TFriendsState;
-    setLoading(true);
-    try {
-      const response: AxiosResponse = await getFriendsService();
-      set((state: TFriendsState) => ({
-        ...state,
-        friendList: response?.data?.data,
-      }));
-    } catch (err: any) {
-      const errorTitle = err?.response?.data?.messages;
-      const errorMessage = err?.response?.data?.messages;
+  // getFriends: async () => {
+  //   const { setLoading } = get() as TFriendsState;
+  //   setLoading(true);
+  //   try {
+  //     const response: AxiosResponse = await getFriendsService();
+  //     set((state: TFriendsState) => ({
+  //       ...state,
+  //       friendList: response?.data?.data,
+  //     }));
+  //   } catch (err: any) {
+  //     const errorTitle = err?.response?.data?.messages;
+  //     const errorMessage = err?.response?.data?.messages;
 
-      // Friendly Mesage burdan çağırılacak
-    } finally {
-      setLoading(false);
-    }
-  },
+  //     // Friendly Mesage burdan çağırılacak
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // },
 });
 
 export default friendsSlice;
