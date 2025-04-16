@@ -6,8 +6,6 @@ import { useState, useEffect } from 'react';
 import Comments from './comments';
 import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
-import { CommentData, CreateCommentData } from '../../store/slices/commentSlice';
-// import { createCommentService, getPostCommentsService, deleteCommentService } from '@/services';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const { 
