@@ -4,7 +4,7 @@ import {
 	refreshTokenService
 } from '@/services';
 import { AxiosResponse } from '@/services/types';
-import { TStoreState } from '@/store';
+import { useStore } from '@/store';
 import { loginHeaderConfig } from '@/utils/helpers';
 import { signIn, signOut } from 'next-auth/react';
 import { StateCreator } from 'zustand';
@@ -12,19 +12,13 @@ import { ERRORS } from '../errorSlice';
 import jwt from 'jsonwebtoken';
 
 const handleError = (
-	err: any,
-	setErrorConfirmInfoModal: Function,
-	closeConfirmModal?: Function
+	err: any
 ) => {
-	console.log('err', err);
-	if (closeConfirmModal) {
-		closeConfirmModal();
-	}
-	const errorTitle = err?.response?.data?.title;
+	const {setErrorConfirmInfoModal,} = useStore();
 	const errorMessage = err?.response?.data?.messages;
 	setErrorConfirmInfoModal(
 		ERRORS.GENERIC_INFO_AND_ERRORS,
-		errorTitle,
+		"Hata",
 		errorMessage,
 		'error'
 	);
@@ -109,10 +103,7 @@ const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
 				isEmailVerified: response?.data?.data?.isEmailVerified
 			}));
 		} catch (err: any) {
-			const errorTitle = err?.response?.data?.messages;
-			const errorMessage = err?.response?.data?.messages;
-
-			// Friendly Mesage burdan çağırılacak
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}

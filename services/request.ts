@@ -10,6 +10,7 @@ const cdnRequest: AxiosInstance = axios.create({
 
 const ApiRequest: AxiosInstance = axios.create({
   baseURL: ENVIRONMENT.baseURL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

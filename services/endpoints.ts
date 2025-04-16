@@ -12,6 +12,11 @@ export default {
 	getRefreshToken: () => `/api/Auth/refresh-token`,
 	apiReqWithQuery: (data: any) =>
 		`/api/pagination/example/?${qs.stringify(data, { skipNulls: true })}`,
-	formDataExample: () => `/api/example/formdata/-token`
+	formDataExample: () => `/api/example/formdata/-token`,
+	/** post */
+	createPost: () => '/api/Posts',
+	getHomePagePosts: (data: any) => `/api/Posts/homepage?${qs.stringify(data, { skipNulls: true })}`,
+	getUserPosts: (data: any) => `/api/Posts?${qs.stringify(data, { skipNulls: true })}`,
+	deletePost: (id: string) => `/api/Posts/${id}`
 	/** error  */
 };

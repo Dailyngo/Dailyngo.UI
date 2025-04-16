@@ -4,12 +4,14 @@ import { devtools, persist } from "zustand/middleware";
 import createAuthSlice, { TAuthState } from "./slices/authSlice";
 import createErrorSlice, { TErrorState } from "./slices/errorSlice";
 import messageSlice, { TMessageState } from "./slices/messageSlice";
-import chatMessagesSlice, {TchatMessagesState }  from "./slices/chatMessagesSlice";
+import chatMessagesSlice, { TchatMessagesState } from "./slices/chatMessagesSlice";
+import createPostSlice, { TPostState } from "./slices/postSlice";
 
 export type TStoreState = TAuthState &
   TErrorState &
   TMessageState &
-  TchatMessagesState
+  TchatMessagesState &
+  TPostState;
 // Add other slices here
 
 export const useStore = create<TStoreState>()(
@@ -19,6 +21,7 @@ export const useStore = create<TStoreState>()(
       ...createErrorSlice(...a),
       ...messageSlice(...a),
       ...chatMessagesSlice(...a),
+      ...createPostSlice(...a),
       /**ekstra slices will be add here */
     }),
     {
