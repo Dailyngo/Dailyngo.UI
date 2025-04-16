@@ -29,3 +29,13 @@ export const getUserInfoByIdService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.getUserInfoById(data));
 export const apiReqWithQueryService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.apiReqWithQuery(data));
+
+/** Post */
+export const createPostService: IRequestModel = (data) =>
+	ApiRequest.post(endpoints.createPost(), data);
+export const getHomePagePostsService: IRequestModel = (data) =>
+	ApiRequest.get(endpoints.getHomePagePosts(data));
+export const getUserPostsService: IRequestModel = (data) =>
+	ApiRequest.get(endpoints.getUserPosts(data));
+export const deletePostService: IRequestModel = (data: any) =>
+	ApiRequest.delete(endpoints.deletePost(data));
