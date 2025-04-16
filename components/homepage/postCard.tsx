@@ -2,66 +2,73 @@
 
 import { Avatar, Dropdown, Button, Modal } from 'antd';
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Comments from './comments';
 import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
-
-// Yorum veri yapısı - API'den gelen yapıya uygun
-interface CommentData {
-  id: string;
-  replyCommentId: string;
-  userId: string;
-  userName: string;
-  canDelete: boolean;
-  content: string;
-  commentDate: string;
-  userProfileImage?: string | null;
-}
+import { CommentData, CreateCommentData } from '../../store/slices/commentSlice';
+// import { createCommentService, getPostCommentsService, deleteCommentService } from '@/services';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
-  const { deletePost } = useStore();
+  const { 
+    deletePost, 
+    getPostComments, 
+    deleteComment,
+    comments,
+    loading: commentLoading
+  } = useStore();
+  
   const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(post.isLiked);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
   
-  // Mock yorumlar - API formatına uygun
-  const mockComments: CommentData[] = [
-    {
-      id: "67fbbff6d2511bd6e1acc466",
-      replyCommentId: "",
-      userId: "af2c2db3-7572-4c2b-bd83-6a0ac7fad50f",
-      userName: "admin",
-      canDelete: true,
-      content: "Harika gorunuyor",
-      commentDate: "2025-04-13T13:45:26.0020431+00:00",
-      userProfileImage: null
-    },
-    {
-      id: "67fbbff6d2511bd6e1acc467",
-      replyCommentId: "67fbbff6d2511bd6e1acc466",
-      userId: "bf3c3db3-8672-4c2b-bd83-7b1ac7fad60g",
-      userName: "mehmet.yilmaz",
-      canDelete: false,
-      content: "Bu paylaşım tam olarak aradığım şeydi, teşekkürler!",
-      commentDate: "2025-04-13T12:30:15.0020431+00:00",
-      userProfileImage: "https://randomuser.me/api/portraits/men/42.jpg"
-    },
-    {
-      id: "67fbbff6d2511bd6e1acc468",
-      replyCommentId: "67fbbff6d2511bd6e1acc467",
-      userId: "cf4c4db3-9772-4c2b-bd83-8c2ac7fad70h",
-      userName: "ayse.demir",
-      canDelete: false,
-      content: "Katılıyorum, gerçekten faydalı olmuş.",
-      commentDate: "2025-04-13T14:15:20.0020431+00:00",
-      userProfileImage: "https://randomuser.me/api/portraits/women/24.jpg"
+  // Yorumları yükle
+  useEffect(() => {
+    if (showComments) {
+      loadComments();
     }
-  ];
+  }, [showComments, post.id]);
+  
+  // Store'dan yorumları getir
+  const loadComments = async () => {
+    const result = await getPostComments(post.id);
+    // Yorum sayısını güncelle
+    if (result.length !== commentCount) {
+      setCommentCount(result.length);
+    }
+  };
+
+  
+  // Yorum sil
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      // Silinen yorumu ve yanıtlarını bul
+      const postComments = comments[post.id] || [];
+      const commentToDelete = postComments.find(c => c.id === commentId);
+      const isMainComment = commentToDelete && !commentToDelete.replyCommentId;
+      
+      // Silinecek yanıtları bul
+      const replies = postComments.filter(c => c.replyCommentId === commentId);
+      
+      // Toplam silinecek yorum sayısı
+      const deleteCount = 1 + (isMainComment ? replies.length : 0);
+      
+      // Yorumu sil
+      await deleteComment(commentId, post.id);
+      
+      // Yorum sayısını güncelle
+      setCommentCount(prev => prev - deleteCount);
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Yorum silinirken bir hata oluştu:', error);
+      return Promise.reject(error);
+    }
+  };
 
   const handleLike = () => {
-    // Artık store'dan likePost kullanmıyoruz, lokal state kullanıyoruz
     if (liked) {
       setLikeCount(likeCount - 1);
     } else {
@@ -95,8 +102,6 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     });
   };
 
-  const isCurrentUserPost = post.userId === 'current-user-id'; // Gerçek uygulamada mevcut kullanıcının ID'sine göre kontrol edilmeli
-
   const dropdownItems = [
     { key: '1', label: 'Rapor Et' },
     { key: '2', label: 'Sil' },
@@ -110,6 +115,9 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
       // Handle edit logic here
     }
   };
+
+  // Mevcut gönderi için yorumları al
+  const postComments = comments[post.id] || [];
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
@@ -146,7 +154,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
       
-      {/* Etkileşim butonları ve sayaçları birleştirilmiş - Büyütülmüş */}
+      {/* Etkileşim butonları ve sayaçları */}
       <div className="px-4 py-4 flex justify-between border-t border-gray-100">
         <div className="flex items-center space-x-8">
           <button 
@@ -166,18 +174,26 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
             className={`flex items-center transition-colors ${showComments ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'}`}
           >
             <Icon icon="mdi:message-outline" className="text-2xl mr-2" />
-            <span className="text-sm font-medium">{post.commentCount}</span>
+            <span className="text-sm font-medium">{commentCount}</span>
           </button>
         </div>
       </div>
 
       {/* Yorumlar bölümü */}
       {showComments && (
-        <Comments 
-          postId={post.id} 
-          comments={mockComments} 
-          commentCount={post.commentCount} 
-        />
+        <>
+          {commentLoading ? (
+            <div className="flex justify-center items-center py-4 border-t border-gray-100">
+              <Icon icon="line-md:loading-loop" width="24" height="24" />
+            </div>
+          ) : (
+            <Comments 
+              postId={post.id} 
+              comments={postComments} 
+              onDeleteComment={handleDeleteComment}
+            />
+          )}
+        </>
       )}
 
       {/* Silme Onay Modalı */}

@@ -17,6 +17,11 @@ export default {
 	createPost: () => '/api/Posts',
 	getHomePagePosts: (data: any) => `/api/Posts/homepage?${qs.stringify(data, { skipNulls: true })}`,
 	getUserPosts: (data: any) => `/api/Posts?${qs.stringify(data, { skipNulls: true })}`,
-	deletePost: (id: string) => `/api/Posts/${id}`
+	deletePost: (id: string) => `/api/Posts/${id}`,
+
+	/** Comment */
+	createComment: () => '/api/Comments',
+	getPostComments: (id: string) => `/api/Comments/${id}`,
+	deleteComment: (id: string) => `/api/Comments/${id}`,
 	/** error  */
 };

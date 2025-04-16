@@ -3,6 +3,8 @@
 import { Avatar, Input, Button } from 'antd';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { CreateCommentData } from '@/store/slices/commentSlice';
+import { useStore } from '../../store';
 
 // Yorum veri yapısı - API'den gelen yapıya uygun
 interface CommentData {
@@ -19,15 +21,21 @@ interface CommentData {
 interface CommentsProps {
   postId: string;
   comments: CommentData[];
-  commentCount: number;
+  onDeleteComment: (commentId: string) => Promise<void>;
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, commentCount }) => {
+const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, onDeleteComment }) => {
   const [comments, setComments] = useState<CommentData[]>(initialComments);
   const [newComment, setNewComment] = useState('');
-  const [loading, setLoading] = useState(false);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyToUserName, setReplyToUserName] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const {  
+      createComment,
+      loading
+    } = useStore();
 
   // Yorumları ana yorumlar ve yanıtlar olarak gruplandırma
   const organizeComments = () => {
@@ -61,51 +69,67 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
     });
   };
 
-  const handleCommentSubmit = () => {
+  // Yorum gönderme işlemi\
+  const onAddComment = async (content: string, replyToId?: string) => {
+    try {
+      const commentData: CreateCommentData = {
+        content,
+        postId: postId,
+        replyCommentId: replyToId || null
+      };
+      
+      await createComment(commentData);
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Yorum eklenirken bir hata oluştu:', error);
+      return Promise.reject(error);
+    }
+  };
+
+  const handleCommentSubmit = async () => {
     if (!newComment.trim()) return;
     
-    setLoading(true);
-    
-    // Normalde burada API çağrısı yapılır
-    // Şimdilik mock veri ekliyoruz
-    const mockNewComment: CommentData = {
-      id: `comment-${Date.now()}`,
-      replyCommentId: replyTo || "",
-      userId: 'current-user-id',
-      userName: 'Siz',
-      canDelete: true,
-      content: newComment,
-      commentDate: new Date().toISOString(),
-      userProfileImage: null
-    };
-    
-    // Yorumu ekle
-    setComments([mockNewComment, ...comments]);
-    // Input'u temizle
-    setNewComment('');
-    setReplyTo(null);
-    setReplyToUserName(null);
-    setLoading(false);
+    try {
+      await onAddComment(newComment);
+      setNewComment('');
+      setReplyTo(null);
+      setReplyToUserName(null);
+    } catch (error) {
+      console.error('Yorum gönderilirken bir hata oluştu:', error);
+    }
   };
 
   const handleDeleteComment = (commentId: string) => {
-    // Yorumu ve tüm yanıtlarını sil
-    const updatedComments = comments.filter(comment => 
-      comment.id !== commentId && comment.replyCommentId !== commentId
-    );
-    setComments(updatedComments);
+    onDeleteComment(commentId).catch(error => {
+      console.error('Yorum silinirken bir hata oluştu:', error);
+    });
   };
 
-  const handleReply = (commentId: string, userName: string) => {
+  const handleReply = async () => {
+    if (!replyContent.trim() || !replyTo) return;
+    
+    try {
+      setSubmitting(true);
+      await onAddComment(replyContent, replyTo);
+      setReplyContent('');
+      setReplyTo(null);
+    } catch (error) {
+      console.error('Yanıt eklenirken bir hata oluştu:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleStartReply = (commentId: string, userName: string) => {
     setReplyTo(commentId);
     setReplyToUserName(userName);
-    // Yanıt yazma alanına odaklan
-    document.getElementById('commentInput')?.focus();
   };
 
   const cancelReply = () => {
     setReplyTo(null);
     setReplyToUserName(null);
+    setReplyContent('');
   };
 
   const { mainComments, replies } = organizeComments();
@@ -118,38 +142,63 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
           S
         </Avatar>
         <div className="flex-1">
-          {replyTo && (
-            <div className="flex justify-between items-center bg-blue-50 p-2 rounded-t-lg text-sm mb-1">
-              <span>
-                <span className="text-blue-600 font-medium">{replyToUserName}</span>'a yanıt yazıyorsunuz
-              </span>
-              <button 
-                onClick={cancelReply}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Icon icon="mdi:close" className="text-lg" />
-              </button>
+          {replyTo ? (
+            <div className="flex items-start mb-3">
+              <div className="flex-1">
+                <div className="flex justify-between items-center bg-blue-50 p-2 rounded-t-lg text-sm">
+                  <span>
+                    <span className="text-blue-600 font-medium">{replyToUserName}</span>'a yanıt yazıyorsunuz
+                  </span>
+                  <button 
+                    onClick={cancelReply}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <Icon icon="mdi:close" className="text-lg" />
+                  </button>
+                </div>
+                <Input.TextArea 
+                  placeholder="Yanıtınızı yazın..." 
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  autoSize={{ minRows: 1, maxRows: 4 }}
+                  className="rounded-b-xl rounded-t-none"
+                />
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    type="primary" 
+                    onClick={handleReply}
+                    loading={submitting}
+                    disabled={!replyContent.trim()}
+                    className="rounded-lg"
+                  >
+                    Yanıtla
+                  </Button>
+                </div>
+              </div>
             </div>
+          ) : (
+            <>
+              <Input.TextArea
+                id="commentInput"
+                placeholder="Yorum yaz..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                autoSize={{ minRows: 1, maxRows: 4 }}
+                className="rounded-xl"
+              />
+              <div className="flex justify-end mt-2">
+                <Button 
+                  type="primary" 
+                  onClick={handleCommentSubmit}
+                  loading={loading}
+                  disabled={!newComment.trim()}
+                  className="rounded-lg"
+                >
+                  Gönder
+                </Button>
+              </div>
+            </>
           )}
-          <Input.TextArea
-            id="commentInput"
-            placeholder={replyTo ? `${replyToUserName}'a yanıt yaz...` : "Yorum yaz..."}
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            autoSize={{ minRows: 1, maxRows: 4 }}
-            className={replyTo ? "rounded-b-xl rounded-t-none" : "rounded-xl"}
-          />
-          <div className="flex justify-end mt-2">
-            <Button 
-              type="primary" 
-              onClick={handleCommentSubmit}
-              loading={loading}
-              disabled={!newComment.trim()}
-              className="rounded-lg"
-            >
-              Gönder
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -157,7 +206,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
       <div className="px-4 pb-3">
         {comments.length === 0 ? (
           <div className="text-center py-4 text-gray-500 text-sm">
-            Henüz yorum yok
+            Henüz yorum yok. İlk yorumu siz yapın!
           </div>
         ) : (
           <div className="space-y-4">
@@ -183,7 +232,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
                     <div className="flex space-x-4 mt-1 ml-1">
                       <button 
                         className="text-xs text-gray-500 hover:text-blue-500"
-                        onClick={() => handleReply(comment.id, comment.userName)}
+                        onClick={() => handleStartReply(comment.id, comment.userName)}
                       >
                         Yanıtla
                       </button>
@@ -222,7 +271,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
                           <div className="flex space-x-4 mt-1 ml-1">
                             <button 
                               className="text-xs text-gray-500 hover:text-blue-500"
-                              onClick={() => handleReply(comment.id, reply.userName)}
+                              onClick={() => handleStartReply(comment.id, reply.userName)}
                             >
                               Yanıtla
                             </button>
