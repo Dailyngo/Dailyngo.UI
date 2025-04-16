@@ -39,3 +39,11 @@ export const getUserPostsService: IRequestModel = (data) =>
 	ApiRequest.get(endpoints.getUserPosts(data));
 export const deletePostService: IRequestModel = (data: any) =>
 	ApiRequest.delete(endpoints.deletePost(data));
+
+/**Comment */
+export const createCommentService: IRequestModel = (data) =>
+	ApiRequest.post(endpoints.createComment(), data);
+export const getPostCommentsService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getPostComments(data));
+export const deleteCommentService: IRequestModel = (data: any) =>
+	ApiRequest.delete(endpoints.deleteComment(data));
