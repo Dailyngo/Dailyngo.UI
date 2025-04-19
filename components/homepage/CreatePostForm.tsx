@@ -15,7 +15,7 @@ const CreatePostForm: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!content.trim()) return;
-    
+
     try {
       await createPost({ content });
       setContent('');
@@ -27,23 +27,22 @@ const CreatePostForm: React.FC = () => {
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link'],
-      ['clean']
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'], // Görsel ekleme seçeneği eklendi
     ],
   };
 
   const formats = [
     'bold', 'italic', 'underline',
     'list', 'bullet',
-    'link'
+    'link', 'image', // Görsel formatı eklendi
   ];
 
   return (
     <Card className="mb-6 shadow-sm">
       <div>
         <div className="mb-12">
-          <ReactQuill 
+          <ReactQuill
             theme="snow"
             value={content}
             onChange={setContent}
@@ -55,8 +54,8 @@ const CreatePostForm: React.FC = () => {
           />
         </div>
         <div className="flex justify-end mt-10">
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={handleSubmit}
             loading={loading}
             disabled={!content.trim()}
@@ -69,4 +68,4 @@ const CreatePostForm: React.FC = () => {
   );
 };
 
-export default CreatePostForm; 
+export default CreatePostForm;

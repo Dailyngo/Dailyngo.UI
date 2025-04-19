@@ -118,7 +118,8 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const postComments = comments[post.id] || [];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+    // borderradius ve shadow ekleyerek kart görünümü oluşturma
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4">
       {/* Üst kısım - Kullanıcı bilgisi ve tarih */}
       <div className="p-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
