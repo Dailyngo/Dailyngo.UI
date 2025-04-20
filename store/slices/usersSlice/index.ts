@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { ResponseData, TStoreState } from '../..';
-import { getTodayBirthdaysService } from '@/services';
+import { getTodayBirthdaysService, searchUsersService } from '@/services';
 
 // Doğum günü verisi tipi
 export interface BirthdayUser {
@@ -9,36 +9,60 @@ export interface BirthdayUser {
   birthDate: string | null;
 }
 
+export interface SearchUser{
+  id: string;
+  fullName: string;
+  username: string;
+  profileImage: string | null;
+  isFollowing: boolean;
+  isFollowed: boolean;
+}
+
 // State tipi
-export interface TBirthdayState {
+export interface TUserState {
   birthdays: BirthdayUser[];
-  loading: boolean;
-  error: string | null;
+  searchUsers: SearchUser[];
 
   // Actions
   fetchBirthdays: () => Promise<void>;
+  getSearchUsers:(searchTerm:string,pageNumber: number) => Promise<void>;
   resetBirthdayError: () => void;
 }
 
-// Slice creator
-const createBirthdaySlice: StateCreator<TStoreState, [], [], TBirthdayState> = (set) => ({
-  birthdays: [],
-  loading: false,
-  error: null,
+const createUserSlice: StateCreator<TStoreState, [], [], TUserState> = (
+	set
+) => ({
+	birthdays: [],
+	searchUsers: [],
 
-  fetchBirthdays: async () => {
-    try {
-      set({ loading: true, error: null });
-      const response = await getTodayBirthdaysService<ResponseData<BirthdayUser>>();
-      set({ birthdays: response.data.data, loading: false });  // Buraya dikkat!
-    } catch (error) {
-      set({ error: 'Doğum günü verileri alınırken bir hata oluştu.', loading: false });
-    }
-  },
+	fetchBirthdays: async () => {
+		try {
+			const response = await getTodayBirthdaysService<
+				ResponseData<BirthdayUser>
+			>();
+			set({ birthdays: response.data.data });
+		} catch (error) {
+			console.error("Doğum günü verileri alınamadı:", error);
+		}
+	},
 
-  resetBirthdayError: () => {
-    set({ error: null });
-  },
+	getSearchUsers: async (searchTerm: string, pageNumber?: number | null) => {
+		try {
+			const response = await searchUsersService<
+				ResponseData<SearchUser>,
+				{ searchTerm: string; pageNumber: number }
+			>({ searchTerm, pageNumber: pageNumber || 1 });
+			const searchUsers = response.data.data;
+
+			set({ searchUsers: searchUsers });
+		} catch (error) {
+			console.error("Kullanıcı arama verileri alınamadı:", error);
+		}
+	},
+
+	resetBirthdayError: () => {
+		set({ error: null });
+	},
 });
 
-export default createBirthdaySlice;
+export default createUserSlice;

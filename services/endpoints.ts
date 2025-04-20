@@ -31,5 +31,9 @@ export default {
 
 	/** users */
 	getTodayBirthdays: () => '/api/users/birthdays',
-	/** error  */
+	searchUsers:(data: any)	=> `/api/users/search?${qs.stringify(data, { skipNulls: true })}`,
+
+
+	/** followers */
+	createFollowRequest: () => `/api/Follow/request`,
 };
