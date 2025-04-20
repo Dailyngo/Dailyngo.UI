@@ -28,5 +28,8 @@ export default {
 	getPostLikes: (id: string, data: any) => `/api/Likes/${id}?${qs.stringify(data, { skipNulls: true })}`,
 	addLike: (id: string) => `/api/Likes/${id}`,
 	removeLike: (id: string) => `/api/Likes/${id}`,
+
+	/** users */
+	getTodayBirthdays: () => '/api/users/birthdays',
 	/** error  */
 };
