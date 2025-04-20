@@ -7,17 +7,20 @@ import { useStore } from '../../store';
 import { Icon } from '@iconify/react';
 
 export default function HomePage() {
-  const { posts, loading, error, getHomePosts } = useStore();
+  const { posts, error, getHomePosts } = useStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [dataStilExist, setDataStilExist] = useState(true);
   const [oldDataLength, setOldDataLength] = useState(0);
+  const [loading, setLoading] = useState(false);
   const loaderRef = useRef(null);
 
   useEffect(() => {
+    setLoading(true);
     setOldDataLength(posts.length);
     getHomePosts(currentPage);
     if (oldDataLength !== 0 && oldDataLength === posts.length)
       setDataStilExist(false);
+    setLoading(false);
   }, [getHomePosts, currentPage]);
 
   // Intersection Observer kurulumu
@@ -52,16 +55,6 @@ export default function HomePage() {
 	  
         {/* Gönderi oluşturma formu */}
         <CreatePostForm />
-
-        {loading && currentPage === 1 && (
-          <div className="text-center py-4">
-            <Icon
-              icon="line-md:loading-loop"
-              width="32"
-              height="32"
-            />
-          </div>
-        )}
 
         {error && (
           <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">

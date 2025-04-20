@@ -7,13 +7,15 @@ import messageSlice, { TMessageState } from "./slices/messageSlice";
 import chatMessagesSlice, { TchatMessagesState } from "./slices/chatMessagesSlice";
 import createPostSlice, { TPostState } from "./slices/postSlice";
 import createCommentSlice, { TCommentState } from "./slices/commentSlice";
+import createLikeSlice, { TLikeState } from "./slices/likeSlice";
 
 export type TStoreState = TAuthState &
   TErrorState &
   TMessageState &
   TchatMessagesState &
   TPostState &
-  TCommentState;
+  TCommentState &
+  TLikeState;
 // Add other slices here
 
 export const useStore = create<TStoreState>()(
@@ -25,6 +27,7 @@ export const useStore = create<TStoreState>()(
       ...chatMessagesSlice(...a),
       ...createPostSlice(...a),
       ...createCommentSlice(...a),
+      ...createLikeSlice(...a),
       /**ekstra slices will be add here */
     }),
     {

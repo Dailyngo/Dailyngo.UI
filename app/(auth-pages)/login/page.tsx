@@ -8,8 +8,8 @@ import Link from "next/link";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("ibrahimhates");
-  const [password, setPassword] = useState("P@ssw0rd");
+  const [username, setUsername] = useState<string | undefined>();
+  const [password, setPassword] = useState<string | undefined>();
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useStore();
   const [loading, setLoading] = useState(false);
@@ -17,6 +17,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+	if (!username || !password) {
+		return;
+	}
     setLoading(true);
     await login({
       EmailOrUserName: username,

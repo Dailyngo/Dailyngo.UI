@@ -60,9 +60,8 @@ export default withAuth(
 				
 				return null;
 			} catch (error : any) {
-				console.log("error", error);
 				if(error.status == 401){
-					console.log("error", isAuthPage);
+					console.log("error",error.status);
 					if (!isAuthPage) {
 						const redirectUrl = new URL('/login', req.url);
 						const response = NextResponse.redirect(redirectUrl);
