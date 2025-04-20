@@ -47,3 +47,7 @@ export const getPostCommentsService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.getPostComments(data));
 export const deleteCommentService: IRequestModel = (data: any) =>
 	ApiRequest.delete(endpoints.deleteComment(data));
+
+/** users */
+export const getTodayBirthdaysService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getTodayBirthdays());

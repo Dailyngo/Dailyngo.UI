@@ -23,5 +23,8 @@ export default {
 	createComment: () => '/api/Comments',
 	getPostComments: (id: string) => `/api/Comments/${id}`,
 	deleteComment: (id: string) => `/api/Comments/${id}`,
+
+	/** users */
+	getTodayBirthdays: () => '/api/users/birthdays',
 	/** error  */
 };
