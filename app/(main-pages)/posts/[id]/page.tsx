@@ -42,7 +42,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 
   const handleLoadMoreComments = async () => {
     const newPage = commentPage + 1;
-    const newComments = await getPostComments(params.id, newPage);
+    const newComments = await getPostComments(params.id);
     setCommentPage(newPage);
     setHasMoreComments(newComments.length > 0);
   };
@@ -70,7 +70,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
       comments[postId] = updatedComments;
       setCommentExists(updatedComments.length > 0);
 
-      await deleteComment(commentId); 
+      await deleteComment(commentId,postId); 
       
     } catch (error) {
       console.error('Yorum silinirken bir hata oluştu:', error);
