@@ -59,3 +59,8 @@ export const removeLikeService: IRequestModel = (data: any) =>
 /** users */
 export const getTodayBirthdaysService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getTodayBirthdays());
+export const searchUsersService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.searchUsers(data));
+
+export const followUserService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.createFollowRequest(), data);
