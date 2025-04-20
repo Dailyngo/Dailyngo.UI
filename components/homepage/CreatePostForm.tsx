@@ -10,17 +10,20 @@ import 'react-quill/dist/quill.snow.css';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const CreatePostForm: React.FC = () => {
-  const { createPost, loading } = useStore();
-  const [content, setContent] = useState('');
+  const { createPost } = useStore();
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState<string | null>();
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
-
+    if (!content) return;
+    setLoading(true);
     try {
       await createPost({ content });
-      setContent('');
     } catch (error) {
       console.error('Gönderi oluşturulurken bir hata oluştu:', error);
+    }finally {
+      setLoading(false);
+      setContent(null);
     }
   };
 
@@ -44,7 +47,7 @@ const CreatePostForm: React.FC = () => {
         <div className="mb-12">
           <ReactQuill
             theme="snow"
-            value={content}
+            value={content || ''}
             onChange={setContent}
             placeholder="Bir şeyler paylaş..."
             modules={modules}
@@ -58,7 +61,7 @@ const CreatePostForm: React.FC = () => {
             type="primary"
             onClick={handleSubmit}
             loading={loading}
-            disabled={!content.trim()}
+            disabled={!content || content === '<p><br></p>'}
           >
             Paylaş
           </Button>

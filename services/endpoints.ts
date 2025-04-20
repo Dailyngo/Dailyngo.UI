@@ -21,7 +21,12 @@ export default {
 
 	/** Comment */
 	createComment: () => '/api/Comments',
-	getPostComments: (id: string) => `/api/Comments/${id}`,
+	getPostComments: (id: string,data: any) => `/api/Comments/${id}?${qs.stringify(data, { skipNulls: true })}`,
 	deleteComment: (id: string) => `/api/Comments/${id}`,
+
+	/** Like */
+	getPostLikes: (id: string, data: any) => `/api/Likes/${id}?${qs.stringify(data, { skipNulls: true })}`,
+	addLike: (id: string) => `/api/Likes/${id}`,
+	removeLike: (id: string) => `/api/Likes/${id}`,
 	/** error  */
 };

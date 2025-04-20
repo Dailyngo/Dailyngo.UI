@@ -10,9 +10,11 @@ export interface PostData {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  isOwner: boolean;
   userId: string;
   userName: string;
   userProfileImage: string | null;
+  isFollowing: boolean;
 }
 
 interface ResponseData{
@@ -39,7 +41,7 @@ export interface TPostState {
   deletePost: (postId: string) => Promise<void>;
   
   // Utility functions
-  setSelectedPost: (postId: string | null) => void;
+  setSelectedPost: (post: PostData | null) => void;
   resetPostError: () => void;
 }
 
@@ -130,15 +132,8 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
   },
   
   // Utility functions
-  setSelectedPost: (postId: string | null) => {
-    if (postId === null) {
-      set({ selectedPost: null });
-    } else {
-      const post = get().posts.find(p => p.id === postId) || 
-                  get().userPosts.find(p => p.id === postId) || 
-                  null;
-      set({ selectedPost: post });
-    }
+  setSelectedPost: (post: PostData | null) => {
+    set({ selectedPost: post });
   },
   
   resetPostError: () => {
