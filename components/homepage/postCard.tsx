@@ -19,7 +19,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     removeLike,
     getPostComments,
     comments,
-    loading: commentLoading
+    loginLoading: commentLoading
   } = useStore();
   
   const [liked, setLiked] = useState(post.isLiked);
@@ -38,13 +38,14 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     
     try {
       if (liked) {
-        await removeLike(post.id);
+		setLiked(false);
         setLikeCount(likeCount - 1);
+        await removeLike(post.id);
       } else {
-        await addLike(post.id);
+		setLiked(true);
         setLikeCount(likeCount + 1);
+        await addLike(post.id);
       }
-      setLiked(!liked);
     } catch (error) {
       console.error('Beğeni işlemi sırasında bir hata oluştu:', error);
     }
