@@ -1,11 +1,12 @@
 "use-client"
 
+import SearchDetailPage from "@/components/homepage/searchDetail";
 import React from "react";
 
 const SearchPage = () => {
     return (
         <div className="container mx-auto px-4 py-6">
-            <h1 className="text-2xl font-bold">Search Page</h1>
+            <SearchDetailPage />
         </div>
     );
 }
