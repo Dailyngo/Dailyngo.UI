@@ -55,3 +55,7 @@ export const addLikeService: IRequestModel = (data: any) =>
 	ApiRequest.post(endpoints.addLike(data));
 export const removeLikeService: IRequestModel = (data: any) =>
 	ApiRequest.delete(endpoints.removeLike(data));
+
+/** users */
+export const getTodayBirthdaysService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getTodayBirthdays());
