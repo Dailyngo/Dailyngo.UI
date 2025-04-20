@@ -34,7 +34,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
 
   const {  
       createComment,
-      loading
+      loginLoading: loading
     } = useStore();
 
   // Yorumları ana yorumlar ve yanıtlar olarak gruplandırma
