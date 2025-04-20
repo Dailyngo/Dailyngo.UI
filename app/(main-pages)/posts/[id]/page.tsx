@@ -18,7 +18,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     getPostComments, 
     deleteComment,
     comments,
-    loading: commentLoading
+    loginLoading: commentLoading
   } = useStore();
 
   useEffect(() => {
