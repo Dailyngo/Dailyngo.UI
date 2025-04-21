@@ -12,13 +12,12 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [commentPage, setCommentPage] = useState(1);
   const [hasMoreComments, setHasMoreComments] = useState(true);
   const [commentExists, setCommentExists] = useState(true);
-
+  const [commentLoading, setCommentLoading] = useState(false);
   const { 
     selectedPost,
     getPostComments, 
     deleteComment,
-    comments,
-    loginLoading: commentLoading
+    comments
   } = useStore();
 
   useEffect(() => {
@@ -35,14 +34,16 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 
   const loadComments = async () => {
     if (selectedPost) {
-      const comments = await getPostComments(selectedPost.id);
+	  setCommentLoading(true);
+      const comments = await getPostComments(params.id,1);
       setHasMoreComments(comments.length > 0);
+	  setCommentLoading(false);
     }
   };
 
   const handleLoadMoreComments = async () => {
     const newPage = commentPage + 1;
-    const newComments = await getPostComments(params.id);
+    const newComments = await getPostComments(params.id,newPage);
     setCommentPage(newPage);
     setHasMoreComments(newComments.length > 0);
   };
