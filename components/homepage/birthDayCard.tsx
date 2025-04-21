@@ -16,7 +16,6 @@ const BirthdayCard = ({ user, isEmpty }: { user?: BirthdayUser; isEmpty?: boolea
   const birthDate = new Date(user?.birthDate ?? '');
   const age = today.getFullYear() - birthDate.getFullYear();
 
-  // Kullanıcının isminin ilk harfini alıyoruz
   const firstLetter = user?.fullName.charAt(0).toUpperCase();
 
   // Doğum günü olan kişiye özel gösterimler
