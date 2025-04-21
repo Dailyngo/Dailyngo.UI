@@ -33,7 +33,7 @@ export interface TCommentState {
   
   // Comment Actions
   createComment: (commentData: CreateCommentData) => Promise<void>;
-  getPostComments: (postId: string) => Promise<CommentData[]>;
+  getPostComments: (postId: string, pageNumber?: number) => Promise<CommentData[]>;
   deleteComment: (commentId: string, postId: string) => Promise<void>;
   
   // Utility functions
@@ -49,30 +49,26 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
   // Actions
   createComment: async (commentData: CreateCommentData) => {
     try {
-      set({ loginLoading: true, error: null });
-      
       // API'ye yorum ekleme isteği gönder
       await createCommentService(commentData);
 
-      set({ loginLoading: false });
     } catch (error) {
       console.error('Yorum eklenirken bir hata oluştu:', error);
       set({ error: 'Yorum eklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
-  getPostComments: async (postId: string) => {
+  getPostComments: async (postId: string,pageNumber?: number ) => {
     try {
-      set({ loginLoading: true, error: null });
-      
       // Eğer yorumlar zaten yüklendiyse, önbellekten getir
       if (get().comments[postId] && get().comments[postId].length > 0) {
-        set({ loginLoading: false });
         return get().comments[postId];
       }
       
       // API'den yorumları getir
-      const response = await getPostCommentsService<CommentResponseData,string>(postId);
+      const response = await getPostCommentsService<CommentResponseData, { postId: string,queryParams : { pageNumber?: number} }>(
+        { postId , queryParams: { pageNumber:  pageNumber }}
+      );
       
       if (response?.data?.data) {
         // Yorumları sakla
@@ -80,8 +76,7 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
           comments: { 
             ...get().comments, 
             [postId]: response.data.data 
-          },
-          loginLoading: false 
+          }
         });
         
         return response.data.data;
@@ -91,15 +86,13 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
           comments: { 
             ...get().comments, 
             [postId]: [] 
-          },
-          loginLoading: false 
+          }
         });
         
         return [];
       }
     } catch (error) {
       console.error('Yorumlar yüklenirken bir hata oluştu:', error);
-      set({ error: 'Yorumlar yüklenirken bir hata oluştu.', loginLoading: false });
       return [];
     }
   },
