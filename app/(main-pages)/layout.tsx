@@ -15,29 +15,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const storedSidebarExpanded =
-    typeof window !== "undefined"
-      ? localStorage.getItem("sidebar-expanded")
-      : true;
-  const [sidebarOpen, setSidebarOpen] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
-  );
-  const [loading, setLoading] = useState<boolean>(true);
-  const { data: session } = useSession();
-  const router = useRouter();
-  const { addMessageForUser, isEmailVerified, isRegistered } = useStore();
-
-  const isAuth =
-    typeof window !== "undefined" && localStorage.getItem("isAuth");
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    // SignalR bağlantısını başlat
     const signalRHelper = new SignalRHelper("notification-hub");
 
     signalRHelper.startConnection();
 
     signalRHelper.on("ReceiveNotification", (message: any) => {
-      console.log("Mesaj alındı:", message);
+      setNotificationCount(message);
     });
 
     // Cleanup bağlantıyı durdur
@@ -47,8 +33,8 @@ export default function RootLayout({
   }, []);
 
   return (
-    <div className="h-screen bg-white">
-      <CustomNavbar />
+    <div className="h-screen  bg-gray-100">
+      <CustomNavbar notificationCount={notificationCount}/>
       {children}
       <FriendlyMessage />
     </div>
