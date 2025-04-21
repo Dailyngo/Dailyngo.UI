@@ -38,11 +38,11 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
   // Actions
   getPostLikes: async (postId: string, pageNumber: number = 1) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // Eğer beğeniler zaten yüklendiyse, önbellekten getir
       if (get().likes[postId] && get().likes[postId].length > 0 && pageNumber === 1) {
-        set({ loading: false });
+        set({ loginLoading: false });
         return get().likes[postId];
       }
       
@@ -59,7 +59,7 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
             ...get().likes, 
             [postId]: response.data.data 
           },
-          loading: false 
+          loginLoading: false 
         });
         
         return response.data.data;
@@ -70,13 +70,13 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
             ...get().likes, 
             [postId]: [] 
           },
-          loading: false 
+          loginLoading: false 
         });
         
         return [];
       }
     } catch (error) {
-      set({ loading: false });
+      set({ loginLoading: false });
       console.error('Beğeniler yüklenirken bir hata oluştu:', error);
       return [];
     }
@@ -84,7 +84,7 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
   
   addLike: async (postId: string) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API'ye beğeni ekleme isteği gönder
       await addLikeService(postId);
@@ -94,13 +94,13 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
       
     } catch (error) {
       console.error('Beğeni eklenirken bir hata oluştu:', error);
-      set({ error: 'Beğeni eklenirken bir hata oluştu.', loading: false });
+      set({ error: 'Beğeni eklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
   removeLike: async (postId: string) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API'ye beğeni silme isteği gönder
       await removeLikeService(postId);
@@ -110,7 +110,7 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
       
     } catch (error) {
       console.error('Beğeni silinirken bir hata oluştu:', error);
-      set({ error: 'Beğeni silinirken bir hata oluştu.', loading: false });
+      set({ error: 'Beğeni silinirken bir hata oluştu.', loginLoading: false });
     }
   },
   

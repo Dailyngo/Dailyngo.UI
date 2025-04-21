@@ -49,25 +49,25 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
   // Actions
   createComment: async (commentData: CreateCommentData) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API'ye yorum ekleme isteği gönder
       await createCommentService(commentData);
 
-      set({ loading: false });
+      set({ loginLoading: false });
     } catch (error) {
       console.error('Yorum eklenirken bir hata oluştu:', error);
-      set({ error: 'Yorum eklenirken bir hata oluştu.', loading: false });
+      set({ error: 'Yorum eklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
   getPostComments: async (postId: string) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // Eğer yorumlar zaten yüklendiyse, önbellekten getir
       if (get().comments[postId] && get().comments[postId].length > 0) {
-        set({ loading: false });
+        set({ loginLoading: false });
         return get().comments[postId];
       }
       
@@ -81,7 +81,7 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
             ...get().comments, 
             [postId]: response.data.data 
           },
-          loading: false 
+          loginLoading: false 
         });
         
         return response.data.data;
@@ -92,21 +92,21 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
             ...get().comments, 
             [postId]: [] 
           },
-          loading: false 
+          loginLoading: false 
         });
         
         return [];
       }
     } catch (error) {
       console.error('Yorumlar yüklenirken bir hata oluştu:', error);
-      set({ error: 'Yorumlar yüklenirken bir hata oluştu.', loading: false });
+      set({ error: 'Yorumlar yüklenirken bir hata oluştu.', loginLoading: false });
       return [];
     }
   },
   
   deleteComment: async (commentId: string, postId: string) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API'ye yorum silme isteği gönder
       await deleteCommentService(commentId);
@@ -125,11 +125,11 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
           ...get().comments,
           [postId]: updatedComments
         },
-        loading: false
+        loginLoading: false
       });
     } catch (error) {
       console.error('Yorum silinirken bir hata oluştu:', error);
-      set({ error: 'Yorum silinirken bir hata oluştu.', loading: false });
+      set({ error: 'Yorum silinirken bir hata oluştu.', loginLoading: false });
     }
   },
   
