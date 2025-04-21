@@ -23,7 +23,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (!selectedPost) {
-      router.push('/'); // If no post is selected, redirect to home
+      router.push('/'); 
       return;
     }
     loadComments();
