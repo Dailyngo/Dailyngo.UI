@@ -12,7 +12,6 @@ const BirthdayCard = ({ user, isEmpty }: { user?: BirthdayUser; isEmpty?: boolea
     );
   }
 
-  // Eğer doğum günü varsa, kartın rengini ve içeriklerini ayarlıyoruz
   const today = new Date();
   const birthDate = new Date(user?.birthDate ?? '');
   const age = today.getFullYear() - birthDate.getFullYear();
