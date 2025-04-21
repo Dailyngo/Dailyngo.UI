@@ -28,5 +28,12 @@ export default {
 	getPostLikes: (id: string, data: any) => `/api/Likes/${id}?${qs.stringify(data, { skipNulls: true })}`,
 	addLike: (id: string) => `/api/Likes/${id}`,
 	removeLike: (id: string) => `/api/Likes/${id}`,
-	/** error  */
+
+	/** users */
+	getTodayBirthdays: () => '/api/users/birthdays',
+	searchUsers:(data: any)	=> `/api/users/search?${qs.stringify(data, { skipNulls: true })}`,
+
+
+	/** followers */
+	createFollowRequest: () => `/api/Follow/request`,
 };

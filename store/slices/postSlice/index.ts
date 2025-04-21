@@ -56,37 +56,37 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
   // Actions
   createPost: async (postData: CreatePostData) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       await createPostService(postData);
       
     } catch (error) {
-      set({ error: 'Gönderi oluşturulurken bir hata oluştu.', loading: false });
+      set({ error: 'Gönderi oluşturulurken bir hata oluştu.', loginLoading: false });
     }
   },
   
   getHomePosts: async (pageNumber: number = 1) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API çağrısı - Dışarıdan gelen pageNumber değerini kullanıyoruz
       const response = await getHomePagePostsService<ResponseData, { pageNumber: number }>({ pageNumber });
       
       // İşlem başarılı olduğunda - sayfa 1 ise değiştir, değilse ekle
       if (pageNumber === 1) {
-        set({ posts: response.data.data, loading: false });
+        set({ posts: response.data.data, loginLoading: false });
       } else {
         // Mevcut gönderilere yeni gönderileri ekle
-        set({ posts: [...get().posts, ...response.data.data], loading: false });
+        set({ posts: [...get().posts, ...response.data.data], loginLoading: false });
       }
     } catch (error) {
-      set({ error: 'Ana sayfa gönderileri yüklenirken bir hata oluştu.', loading: false });
+      set({ error: 'Ana sayfa gönderileri yüklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
   getUserPosts: async (userId?: string, pageNumber: number = 1) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API çağrısı
       const response = await getUserPostsService<ResponseData, { userId?: string, pageNumber: number }>({
@@ -95,15 +95,15 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
       });
       
       // İşlem başarılı olduğunda
-      set({ userPosts: response.data.data, loading: false });
+      set({ userPosts: response.data.data, loginLoading: false });
     } catch (error) {
-      set({ error: 'Kullanıcı gönderileri yüklenirken bir hata oluştu.', loading: false });
+      set({ error: 'Kullanıcı gönderileri yüklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
   deletePost: async (postId: string) => {
     try {
-      set({ loading: true, error: null });
+      set({ loginLoading: true, error: null });
       
       // API çağrısı
       await deletePostService(postId);
@@ -124,10 +124,10 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
         posts: updatedPosts, 
         userPosts: updatedUserPosts,
         selectedPost,
-        loading: false 
+        loginLoading: false 
       });
     } catch (error) {
-      set({ error: 'Gönderi silinirken bir hata oluştu.', loading: false });
+      set({ error: 'Gönderi silinirken bir hata oluştu.', loginLoading: false });
     }
   },
   
