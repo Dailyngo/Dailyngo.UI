@@ -51,3 +51,10 @@ export const deleteCommentService: IRequestModel = (data: any) =>
 /** users */
 export const getTodayBirthdaysService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getTodayBirthdays());
+
+/** About */
+export const getOwnAboutService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getOwnAbout());
+
+export const getOtherAboutService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getOtherAbout(data.userId));

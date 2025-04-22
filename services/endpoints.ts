@@ -26,5 +26,9 @@ export default {
 
 	/** users */
 	getTodayBirthdays: () => '/api/users/birthdays',
+
+	/** About */
+    getOwnAbout: () => '/api/Abouts/about',
+    getOtherAbout: (userId: string) => `/api/Abouts/other-about/${userId}`,
 	/** error  */
 };
