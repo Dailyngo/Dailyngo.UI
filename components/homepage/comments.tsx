@@ -34,6 +34,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
 
   const {  
       createComment,
+      getPostComments,
       loginLoading: loading
     } = useStore();
 
@@ -95,6 +96,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
       setNewComment('');
       setReplyTo(null);
       setReplyToUserName(null);
+      await getPostComments(postId, 1);
     } catch (error) {
       console.error('Yorum gönderilirken bir hata oluştu:', error);
     }
