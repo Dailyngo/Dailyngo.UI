@@ -51,7 +51,7 @@ export default function HomePage() {
 
   return (
     <main className="py-6 px-4 min-h-screen">
-      <div className="w-full max-w-2xl mx-auto md:w-2/3 lg:w-1/2">
+      <div className="w-full max-w-3xl mx-auto md:w-2/3 lg:w-1/2">
 	  
         {/* Gönderi oluşturma formu */}
         <CreatePostForm />

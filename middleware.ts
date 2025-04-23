@@ -22,7 +22,6 @@ export default withAuth(
 					}
 				});
 				const response: AxiosResponse = await axiosInstance.get(endpoints.userLoginInfo());
-				const isRegistered = response.data.data.isRegistered;
 				const isEmailVerified = response.data.data.isEmailConfirmed;
 				const currentPath = req.nextUrl.pathname;
 				
@@ -40,22 +39,6 @@ export default withAuth(
 				if (!isEmailVerified) {
 					console.log("Email not verified - redirecting");
 					return NextResponse.redirect(new URL("/verifyEmail", req.url));
-				}
-				
-				if (currentPath.startsWith("/registerDetail")) {
-					if (isRegistered) {
-					// Zaten kayıt yapmışsa ana sayfaya yönlendir
-						return NextResponse.redirect(new URL("/", req.url));
-					}
-					// Kayıt sayfasında ve kayıtsızsa izin ver
-					return null;
-				}
-				
-				if (!isRegistered) {
-					console.log("Not registered - redirecting");
-					return NextResponse.redirect(
-						new URL("/registerDetail", req.url)
-					);
 				}
 				
 				return null;

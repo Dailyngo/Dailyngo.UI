@@ -33,9 +33,10 @@ export default function RootLayout({
   }, []);
 
   return (
-    <div className="h-screen  bg-gray-100">
-      <CustomNavbar notificationCount={notificationCount}/>
-      {children}
+    <div className="h-screen">
+      <CustomNavbar notificationCount={notificationCount}>
+        {children}
+      </CustomNavbar>
       <FriendlyMessage />
     </div>
   );
