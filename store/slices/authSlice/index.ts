@@ -8,21 +8,7 @@ import { useStore } from '@/store';
 import { loginHeaderConfig } from '@/utils/helpers';
 import { signIn, signOut } from 'next-auth/react';
 import { StateCreator } from 'zustand';
-import { ERRORS } from '../errorSlice';
 import jwt from 'jsonwebtoken';
-
-const handleError = (
-	err: any
-) => {
-	const {setErrorConfirmInfoModal,} = useStore();
-	const errorMessage = err?.response?.data?.messages;
-	setErrorConfirmInfoModal(
-		ERRORS.GENERIC_INFO_AND_ERRORS,
-		"Hata",
-		errorMessage,
-		'error'
-	);
-};
 
 export type LoginReqForm = {
 	EmailOrUserName: string;
@@ -33,8 +19,9 @@ export type TAuthState = {
 	isAuthenticated: boolean;
 	isRegistered?: boolean;
 	isEmailVerified?: boolean;
-	loading: boolean;
+	loginLoading: boolean;
 	token?: string;
+	authErrors?: string | null;
 	userInfoById?: any;
 	/** actions */
 	logout: () => void;
@@ -46,15 +33,16 @@ export type TAuthState = {
 
 const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
 	isAuthenticated: false,
-	loading: false,
+	loginLoading: false,
 	isEmailVerified: false,
 	isRegistered: false,
+	authErrors: null,
 	userInfoById: {},
 	/** global loading action */
 	setLoading: (isLoading: boolean) => {
 		set((state: TAuthState) => ({
 			...state,
-			loading: isLoading
+			loginLoading: isLoading
 		}));
 	},
 
@@ -97,13 +85,26 @@ const createAuthSlice: StateCreator<TAuthState> = (set, get) => ({
 
 			set((state: TAuthState) => ({
 				...state,
+				authErrors:null,
 				isAuthenticated: true,
 				token: response?.data?.data?.token,
 				isRegistered: response?.data?.data?.isRegistered,
 				isEmailVerified: response?.data?.data?.isEmailVerified
 			}));
 		} catch (err: any) {
-			handleError(err);
+			const errorMessage = err?.response?.data?.messages;
+			set((state: TAuthState) => ({
+				...state,
+				authErrors:errorMessage
+			}));
+
+			setInterval(() => {
+				set((state: TAuthState) => ({
+					...state,
+					authErrors:null
+				}));
+			}
+			, 3000);
 		} finally {
 			setLoading(false);
 		}

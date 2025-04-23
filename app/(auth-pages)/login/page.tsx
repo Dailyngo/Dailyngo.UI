@@ -1,29 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
-import { PulseLoader } from "react-spinners";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { useStore } from "@/store";
 import Link from "next/link";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { ERRORS } from "@/store/slices/errorSlice";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("ibrahimhates");
-  const [password, setPassword] = useState("P@ssw0rd");
+  const [username, setUsername] = useState<string | undefined>();
+  const [password, setPassword] = useState<string | undefined>();
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useStore();
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { login,loginLoading,authErrors } = useStore();
+  const { setErrorConfirmInfoModal } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+	if (!username || !password) {
+		return;
+	}
     await login({
       EmailOrUserName: username,
       Password: password,
     }, () => { });
-    setLoading(false);
   };
+
+  useEffect(() => {
+	if (authErrors) {
+		setErrorConfirmInfoModal(
+			ERRORS.GENERIC_INFO_AND_ERRORS,
+			"Hata",
+			authErrors,
+			"error"
+		);
+	}
+  }, [authErrors]);
 
   return (
 		<div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
@@ -147,10 +157,10 @@ export default function LoginPage() {
 
 					<button
 						type="submit"
-						disabled={loading}
+						disabled={loginLoading}
 						className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
 					>
-						{loading ? (
+						{loginLoading ? (
 							<Icon
 								icon="line-md:loading-loop"
 								width="24"

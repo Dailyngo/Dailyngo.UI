@@ -44,13 +44,26 @@ export const deletePostService: IRequestModel = (data: any) =>
 export const createCommentService: IRequestModel = (data) =>
 	ApiRequest.post(endpoints.createComment(), data);
 export const getPostCommentsService: IRequestModel = (data: any) =>
-	ApiRequest.get(endpoints.getPostComments(data));
+	ApiRequest.get(endpoints.getPostComments(data.postId, data.queryParams));
 export const deleteCommentService: IRequestModel = (data: any) =>
 	ApiRequest.delete(endpoints.deleteComment(data));
+
+/** Like */
+export const getPostLikesService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getPostLikes(data.postId, data.queryParams));
+export const addLikeService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.addLike(data));
+export const removeLikeService: IRequestModel = (data: any) =>
+	ApiRequest.delete(endpoints.removeLike(data));
 
 /** users */
 export const getTodayBirthdaysService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getTodayBirthdays());
+export const searchUsersService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.searchUsers(data));
+
+export const followUserService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.createFollowRequest(), data);
 
 /** About */
 export const getOwnAboutService: IRequestModel = () =>

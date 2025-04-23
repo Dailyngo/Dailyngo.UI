@@ -7,7 +7,9 @@ import messageSlice, { TMessageState } from "./slices/messageSlice";
 import chatMessagesSlice, { TchatMessagesState } from "./slices/chatMessagesSlice";
 import createPostSlice, { TPostState } from "./slices/postSlice";
 import createCommentSlice, { TCommentState } from "./slices/commentSlice";
-import createBirthdaySlice, { TBirthdayState } from "./slices/usersSlice";
+import createLikeSlice, { TLikeState } from "./slices/likeSlice";
+import createUserSlice, { TUserState } from "./slices/usersSlice";
+import createFollowSlice, { TFollowState } from "./slices/followSlice";
 import createAboutsSlice, { TAboutState } from "./slices/aboutsSlice";
 
 export type TStoreState = TAuthState &
@@ -16,7 +18,10 @@ export type TStoreState = TAuthState &
   TchatMessagesState &
   TPostState &
   TCommentState &
-  TBirthdayState&
+  TLikeState & 
+  TCommentState &
+  TFollowState &
+  TUserState &
   TAboutState;
 // Add other slices here
 
@@ -29,7 +34,9 @@ export const useStore = create<TStoreState>()(
       ...chatMessagesSlice(...a),
       ...createPostSlice(...a),
       ...createCommentSlice(...a),
-      ...createBirthdaySlice(...a),
+      ...createLikeSlice(...a),
+      ...createUserSlice(...a),
+      ...createFollowSlice(...a),
       ...createAboutsSlice(...a),
       /**ekstra slices will be add here */
     }),
@@ -41,7 +48,6 @@ export const useStore = create<TStoreState>()(
 export interface ResponseData<T>{
   data: T[];
 }
-
 
 if (process.env.NODE_ENV === "development") {
   mountStoreDevtool("store", useStore);

@@ -12,12 +12,10 @@ const BirthdayCard = ({ user, isEmpty }: { user?: BirthdayUser; isEmpty?: boolea
     );
   }
 
-  // Eğer doğum günü varsa, kartın rengini ve içeriklerini ayarlıyoruz
   const today = new Date();
   const birthDate = new Date(user?.birthDate ?? '');
   const age = today.getFullYear() - birthDate.getFullYear();
 
-  // Kullanıcının isminin ilk harfini alıyoruz
   const firstLetter = user?.fullName.charAt(0).toUpperCase();
 
   // Doğum günü olan kişiye özel gösterimler

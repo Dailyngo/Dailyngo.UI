@@ -2,81 +2,72 @@
 
 import { Avatar, Dropdown, Button, Modal } from 'antd';
 import { Icon } from '@iconify/react';
-import { useState, useEffect } from 'react';
-import Comments from './comments';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
+import { LikeData } from '../../store/slices/likeSlice';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
+  const router = useRouter();
   const { 
-    deletePost, 
-    getPostComments, 
-    deleteComment,
+    deletePost,
+    setSelectedPost,
+    getPostLikes,
+    likes,
+    addLike,
+    removeLike,
+    getPostComments,
     comments,
-    loading: commentLoading
+    loginLoading: commentLoading
   } = useStore();
   
-  const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(post.isLiked);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [commentCount, setCommentCount] = useState(post.commentCount);
-  
-  // Yorumları yükle
-  useEffect(() => {
-    if (showComments) {
-      loadComments();
-    }
-  }, [showComments, post.id]);
-  
-  // Store'dan yorumları getir
-  const loadComments = async () => {
-    const result = await getPostComments(post.id);
-    // Yorum sayısını güncelle
-    if (result.length !== commentCount) {
-      setCommentCount(result.length);
-    }
+  const [showLikes, setShowLikes] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+
+  const handlePostClick = () => {
+    setSelectedPost(post);
+    router.push(`/posts/${post.id}`);
   };
 
-  
-  // Yorum sil
-  const handleDeleteComment = async (commentId: string) => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent post click when liking
+    
     try {
-      // Silinen yorumu ve yanıtlarını bul
-      const postComments = comments[post.id] || [];
-      const commentToDelete = postComments.find(c => c.id === commentId);
-      const isMainComment = commentToDelete && !commentToDelete.replyCommentId;
-      
-      // Silinecek yanıtları bul
-      const replies = postComments.filter(c => c.replyCommentId === commentId);
-      
-      // Toplam silinecek yorum sayısı
-      const deleteCount = 1 + (isMainComment ? replies.length : 0);
-      
-      // Yorumu sil
-      await deleteComment(commentId, post.id);
-      
-      // Yorum sayısını güncelle
-      setCommentCount(prev => prev - deleteCount);
-      
-      return Promise.resolve();
+      if (liked) {
+		setLiked(false);
+        setLikeCount(likeCount - 1);
+        await removeLike(post.id);
+      } else {
+		setLiked(true);
+        setLikeCount(likeCount + 1);
+        await addLike(post.id);
+      }
     } catch (error) {
-      console.error('Yorum silinirken bir hata oluştu:', error);
-      return Promise.reject(error);
+      console.error('Beğeni işlemi sırasında bir hata oluştu:', error);
     }
   };
 
-  const handleLike = () => {
-    if (liked) {
-      setLikeCount(likeCount - 1);
-    } else {
-      setLikeCount(likeCount + 1);
+  const handleShowLikes = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if(!post.isOwner) return;
+    if (!showLikes) {
+      await getPostLikes(post.id);
     }
-    setLiked(!liked);
+    setShowLikes(!showLikes);
   };
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
+  const handleFollow = async (userId: string, isFollowing: boolean) => {
+    try {
+      // TODO: Implement follow/unfollow API call
+      console.log(isFollowing ? 'Unfollow' : 'Follow', userId);
+    } catch (error) {
+      console.error('Takip işlemi sırasında bir hata oluştu:', error);
+    }
   };
 
   const handleDeletePost = async () => {
@@ -102,8 +93,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 
   const dropdownItems = [
     { key: '1', label: 'Rapor Et' },
-    { key: '2', label: 'Sil' },
-    { key: '3', label: 'Düzenle' }
+    ...(post.isOwner ? [
+      { key: '2', label: 'Sil' },
+      { key: '3', label: 'Düzenle' }
+    ] : [])
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
@@ -114,99 +107,156 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
-  // Mevcut gönderi için yorumları al
-  const postComments = comments[post.id] || [];
-
   return (
-    // borderradius ve shadow ekleyerek kart görünümü oluşturma
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4">
-      {/* Üst kısım - Kullanıcı bilgisi ve tarih */}
-      <div className="p-4 flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <Avatar 
-            src={post.userProfileImage || undefined} 
-            size={40}
-          >
-            {!post.userProfileImage && post.userName.charAt(0).toUpperCase()}
-          </Avatar>
-          <div>
-            <div className="font-medium text-gray-800">{post.userName}</div>
-            <div className="text-xs text-gray-500">{formatDate(post.postDate)}</div>
-          </div>
-        </div>
-        <Dropdown 
-          menu={{ 
-            items: dropdownItems,
-            onClick: handleMenuClick
-          }}
-          placement="bottomRight"
-        >
-          <Button type="text">
-            <Icon icon="mdi:dots-vertical" />
-          </Button>
-        </Dropdown>
-      </div>
-      
-      {/* Metin içeriği - HTML render etme */}
-      <div 
-        className="px-4 pb-3 text-gray-700 post-content"
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
-      
-      {/* Etkileşim butonları ve sayaçları */}
-      <div className="px-4 py-4 flex justify-between border-t border-gray-100">
-        <div className="flex items-center space-x-8">
-          <button 
-            onClick={handleLike}
-            className="flex items-center text-gray-500 hover:text-red-500 transition-colors"
-          >
-            {liked ? (
-              <Icon icon="mdi:heart" className="text-red-500 text-2xl mr-2" />
-            ) : (
-              <Icon icon="mdi:heart-outline" className="text-2xl mr-2" />
-            )}
-            <span className="text-sm font-medium">{likeCount}</span>
-          </button>
-          
-          <button 
-            onClick={toggleComments}
-            className={`flex items-center transition-colors ${showComments ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'}`}
-          >
-            <Icon icon="mdi:message-outline" className="text-2xl mr-2" />
-            <span className="text-sm font-medium">{commentCount}</span>
-          </button>
-        </div>
-      </div>
+		<div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4 hover:shadow-xl transition-shadow">
+			{/* Üst kısım - Kullanıcı bilgisi ve tarih */}
+			<div className="p-4 flex justify-between items-center">
+				<div
+					className="flex items-center cursor-pointer space-x-3"
+					onClick={handlePostClick}
+				>
+					<Avatar src={post.userProfileImage || undefined} size={40}>
+						{!post.userProfileImage &&
+							post.userName.charAt(0).toUpperCase()}
+					</Avatar>
+					<div>
+						<div className="font-medium text-gray-800">
+							{post.userName}
+						</div>
+						<div className="text-xs text-gray-500">
+							{formatDate(post.postDate)}
+						</div>
+					</div>
+				</div>
+				<Dropdown
+					menu={{
+						items: dropdownItems,
+						onClick: handleMenuClick,
+					}}
+					placement="bottomRight"
+					trigger={["click"]}
+				>
+					<Button type="text" onClick={(e) => e.stopPropagation()}>
+						<Icon icon="mdi:dots-vertical" />
+					</Button>
+				</Dropdown>
+			</div>
 
-      {/* Yorumlar bölümü */}
-      {showComments && (
-        <>
-          {commentLoading ? (
-            <div className="flex justify-center items-center py-4 border-t border-gray-100">
-              <Icon icon="line-md:loading-loop" width="24" height="24" />
-            </div>
-          ) : (
-            <Comments 
-              postId={post.id} 
-              comments={postComments} 
-              onDeleteComment={handleDeleteComment}
-            />
-          )}
-        </>
-      )}
+			{/* Metin içeriği - HTML render etme */}
+			<div
+				className="px-4 pb-3 text-gray-700 post-content cursor-pointer"
+				onClick={handlePostClick}
+				dangerouslySetInnerHTML={{ __html: post.content }}
+			/>
 
-      {/* Silme Onay Modalı */}
-      <Modal
-        title="Gönderiyi Sil"
-        open={isDeleteModalVisible}
-        onOk={handleDeletePost}
-        onCancel={() => setIsDeleteModalVisible(false)}
-        okText="Sil"
-        cancelText="İptal"
-      >
-        <p>Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
-      </Modal>
-    </div>
+			{/* Etkileşim butonları ve sayaçları */}
+			<div className="px-4 py-4 flex justify-between border-t border-gray-100">
+				<div className="flex items-center space-x-8">
+					<div className="flex items-center cursor-pointer text-gray-500">
+						<button
+							onClick={handleLike}
+							className="flex items-center text-gray-500 hover:text-red-500 transition-colors pr-1"
+						>
+							{liked ? (
+								<Icon
+									icon="mdi:heart"
+									className="text-red-500 text-2xl mr-2"
+								/>
+							) : (
+								<Icon
+									icon="mdi:heart-outline"
+									className="text-2xl mr-2"
+								/>
+							)}
+						</button>
+						<span
+							className="text-sm font-medium hover:underline"
+							onClick={handleShowLikes}
+						>
+							{likeCount}
+						</span>
+					</div>
+
+					<div
+						className="flex items-center cursor-pointer text-gray-500"
+						onClick={handlePostClick}
+					>
+						<Icon
+							icon="mdi:message-outline"
+							className="text-2xl mr-2"
+						/>
+						<span className="text-sm font-medium">
+							{post.commentCount}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			{/* Beğeniler Listesi */}
+			{showLikes && likes[post.id] && (
+				<div className="border-t border-gray-100 p-4">
+					<h3 className="font-medium text-gray-800 mb-3">
+						Beğenenler
+					</h3>
+					<div className="space-y-3">
+						{likes[post.id].map((like: LikeData) => (
+							<div
+								key={like.userId}
+								className="flex items-center justify-between"
+							>
+								<div className="flex items-center space-x-3">
+									<Avatar size={32}>
+										{like.fullName.charAt(0).toUpperCase()}
+									</Avatar>
+									<span className="font-medium text-gray-800">
+										{like.fullName}
+									</span>
+								</div>
+								<Button
+									type={
+										like.isFollowing ? "default" : "primary"
+									}
+									onClick={() =>
+										handleFollow(
+											like.userId,
+											like.isFollowing
+										)
+									}
+									className={
+										like.isFollowing
+											? "bg-gray-100 hover:bg-gray-200"
+											: ""
+									}
+									size="small"
+								>
+									{like.isFollowing
+										? "Takipten Çık"
+										: "Takip Et"}
+								</Button>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Silme Onay Modalı */}
+			<Modal
+				title="Gönderiyi Sil"
+				open={isDeleteModalVisible}
+				onOk={handleDeletePost}
+				onCancel={(e) => {
+					e.stopPropagation();
+					setIsDeleteModalVisible(false);
+				}}
+				okText="Sil"
+				cancelText="İptal"
+			>
+				<p>
+					Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem
+					geri alınamaz.
+				</p>
+			</Modal>
+		</div>
   );
 };
 
