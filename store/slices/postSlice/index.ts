@@ -37,7 +37,7 @@ export interface TPostState {
   // Post Actions
   createPost: (postData: CreatePostData) => Promise<void>;
   getHomePosts: (pageNumber?: number) => Promise<void>;
-  getUserPosts: (userId?: string, pageNumber?: number) => Promise<void>;
+  getUserPosts: (userId?: string | null, pageNumber?: number) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
   
   // Utility functions
@@ -84,12 +84,12 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
     }
   },
   
-  getUserPosts: async (userId?: string, pageNumber: number = 1) => {
+  getUserPosts: async (userId?: string | null, pageNumber: number = 1) => {
     try {
       set({ loginLoading: true, error: null });
       
       // API çağrısı
-      const response = await getUserPostsService<ResponseData, { userId?: string, pageNumber: number }>({
+      const response = await getUserPostsService<ResponseData, { userId?: string | null, pageNumber: number }>({
         userId,
         pageNumber
       });

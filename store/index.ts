@@ -48,6 +48,10 @@ export const useStore = create<TStoreState>()(
 export interface ResponseData<T>{
   data: T[];
 }
+export interface ResponseSingleData<T>{
+  data: T;
+}
+
 
 if (process.env.NODE_ENV === "development") {
   mountStoreDevtool("store", useStore);

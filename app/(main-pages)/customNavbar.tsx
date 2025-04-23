@@ -61,6 +61,7 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
   useEffect(() => {
     const activeItem = menuItems.find(item => item.path === pathname);
     if (activeItem) setCurrent(activeItem.key);
+    else setCurrent('0');
   }, [pathname]);
 
   const handleLogout = async () => {
