@@ -65,7 +65,6 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     try {
       if (!selectedPost) return;
       
-      // Yorum silme işlemi
       const postId = params.id;
       const commentIndex = comments[postId].findIndex(
         (comment: any) => comment.id === commentId
@@ -76,7 +75,6 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
         return Promise.reject(new Error('Yorum bulunamadı'));
       }
 
-      // Yorum silindikten sonra state güncelleniyor
       const updatedComments = [...comments[postId]];
       updatedComments.splice(commentIndex, 1);
 
