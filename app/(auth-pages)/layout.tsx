@@ -8,15 +8,14 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sol taraf - Görsel Bölümü */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative">
+      <div className="hidden lg:flex lg:w-1/2 bg-gray-800 relative">
         <Image
-          src="/images/logo.png"
+          src="/images/auth_logo.jpg"
           alt="Register"
           fill
         />
-        <div className="absolute inset-0 bg-blue-600/30" />
       </div>
 
       {/* Sağ taraf - Register Formu */}

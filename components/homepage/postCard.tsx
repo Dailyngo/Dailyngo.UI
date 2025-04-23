@@ -12,7 +12,6 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const router = useRouter();
   const { 
     deletePost,
-    setSelectedPost,
     getPostLikes,
     likes,
     addLike,
@@ -29,7 +28,6 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const [showComments, setShowComments] = useState(false);
 
   const handlePostClick = () => {
-    setSelectedPost(post);
     router.push(`/posts/${post.id}`);
   };
 
@@ -107,6 +105,11 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
+  const handleUserClick = (e: React.MouseEvent) => {
+	e.stopPropagation(); 
+	router.push(`/users/${post.userId}`);
+  };
+
   return (
 		<div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4 hover:shadow-xl transition-shadow">
 			{/* Üst kısım - Kullanıcı bilgisi ve tarih */}
@@ -120,8 +123,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 							post.userName.charAt(0).toUpperCase()}
 					</Avatar>
 					<div>
-						<div className="font-medium text-gray-800">
-							{post.userName}
+						<div className="font-medium text-gray-800"
+							onClick={handleUserClick}
+						>
+							@{post.userName}
 						</div>
 						<div className="text-xs text-gray-500">
 							{formatDate(post.postDate)}

@@ -1,5 +1,5 @@
 import { mountStoreDevtool } from "simple-zustand-devtools";
-import { create } from "zustand";
+import { create, StoreApi } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import createAuthSlice, { TAuthState } from "./slices/authSlice";
 import createErrorSlice, { TErrorState } from "./slices/errorSlice";
@@ -11,6 +11,7 @@ import createLikeSlice, { TLikeState } from "./slices/likeSlice";
 import createUserSlice, { TUserState } from "./slices/usersSlice";
 import createFollowSlice, { TFollowState } from "./slices/followSlice";
 import createAboutsSlice, { TAboutState } from "./slices/aboutsSlice";
+import createNotificationSlice, { TNotificationState } from "./slices/notification";
 
 export type TStoreState = TAuthState &
   TErrorState &
@@ -22,6 +23,7 @@ export type TStoreState = TAuthState &
   TCommentState &
   TFollowState &
   TUserState &
+  TNotificationState &
   TAboutState;
 // Add other slices here
 
@@ -38,6 +40,7 @@ export const useStore = create<TStoreState>()(
       ...createUserSlice(...a),
       ...createFollowSlice(...a),
       ...createAboutsSlice(...a),
+      ...createNotificationSlice(...a),
       /**ekstra slices will be add here */
     }),
     {

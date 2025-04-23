@@ -39,6 +39,8 @@ export const getUserPostsService: IRequestModel = (data) =>
 	ApiRequest.get(endpoints.getUserPosts(data));
 export const deletePostService: IRequestModel = (data: any) =>
 	ApiRequest.delete(endpoints.deletePost(data));
+export const getPostDetailsService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getPostById(data));
 
 /**Comment */
 export const createCommentService: IRequestModel = (data) =>
@@ -72,6 +74,9 @@ export const answerFollowRequestService: IRequestModel = (data: any) =>
 /** About */
 export const getOwnAboutService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getOwnAbout());
-
 export const getOtherAboutService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.getOtherAbout(data.userId));
+
+/** Notifications */
+export const getAllNotificationsService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getAllNotifications());
