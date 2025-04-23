@@ -61,6 +61,17 @@ export const getTodayBirthdaysService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getTodayBirthdays());
 export const searchUsersService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.searchUsers(data));
+export const getUserProfileCardService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getUserProfileCard(data));
 
 export const followUserService: IRequestModel = (data: any) =>
 	ApiRequest.post(endpoints.createFollowRequest(), data);
+export const answerFollowRequestService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.answerFollowRequest(),data);
+
+/** About */
+export const getOwnAboutService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getOwnAbout());
+
+export const getOtherAboutService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getOtherAbout(data.userId));

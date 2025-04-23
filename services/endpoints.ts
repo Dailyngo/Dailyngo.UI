@@ -32,8 +32,14 @@ export default {
 	/** users */
 	getTodayBirthdays: () => '/api/users/birthdays',
 	searchUsers:(data: any)	=> `/api/users/search?${qs.stringify(data, { skipNulls: true })}`,
-
+	getUserProfileCard:(data: any) => `/api/Users/profile-card?${qs.stringify(data, { skipNulls: true })}`,
 
 	/** followers */
 	createFollowRequest: () => `/api/Follow/request`,
+	answerFollowRequest: () => `/api/Follow/answer`,
+
+	/** About */
+    getOwnAbout: () => '/api/Abouts/about',
+    getOtherAbout: (userId: string) => `/api/Abouts/other-about/${userId}`,
+	/** error  */
 };

@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { ResponseData, TStoreState } from '../..';
-import { getTodayBirthdaysService, searchUsersService } from '@/services';
+import { ResponseData, ResponseSingleData, TStoreState } from '../..';
+import { getTodayBirthdaysService, getUserProfileCardService, searchUsersService } from '@/services';
 
 // Doğum günü verisi tipi
 export interface BirthdayUser {
@@ -14,8 +14,26 @@ export interface SearchUser{
   fullName: string;
   username: string;
   profileImage: string | null;
+}
+
+// IsReceiverFollowRequest = receivedFollowRequest != null,
+// SendReceiverRequestId = receivedFollowRequest?.Id.ToString()
+export interface UserProfileData {
+  getUserResponse: {
+	profilePicture: string | null;
+	fullName: string;
+	userName: string;
+  };
+  follower: number;
+  following: number;
+  bio: string | null;
+  postCount: number;
   isFollowing: boolean;
   isFollowed: boolean;
+  sendFollowRequestId: string | null; // attigim takip isteginin idsi
+  isSendFollowRequest: boolean; // ben takip istegi gonderdim mi?
+  isReceiverFollowRequest: boolean; // bana takip istegi atmismi?
+  sendReceiverRequestId: string | null; // bana gonderilen takip isteginin idsi
 }
 
 // State tipi
@@ -26,6 +44,7 @@ export interface TUserState {
   // Actions
   fetchBirthdays: () => Promise<void>;
   getSearchUsers:(searchTerm:string,pageNumber: number) => Promise<void>;
+  getUserProfileCard: (userId?: string | null) => Promise<UserProfileData | null>;
   resetBirthdayError: () => void;
 }
 
@@ -57,6 +76,21 @@ const createUserSlice: StateCreator<TStoreState, [], [], TUserState> = (
 			set({ searchUsers: searchUsers });
 		} catch (error) {
 			console.error("Kullanıcı arama verileri alınamadı:", error);
+		}
+	},
+
+	getUserProfileCard: async (userId?: string | null) => {
+		try {
+			console.log("userId in slice", userId);
+			const response = await getUserProfileCardService<
+				ResponseSingleData<UserProfileData>,
+				{ userId?: string | null }
+			>( { userId });
+			const userProfileData = response.data.data;
+			return userProfileData;
+		} catch (error) {
+			console.error("Kullanıcı profili verileri alınamadı:", error);
+			throw error; // Hata durumunda hata fırlat
 		}
 	},
 

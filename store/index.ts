@@ -10,6 +10,7 @@ import createCommentSlice, { TCommentState } from "./slices/commentSlice";
 import createLikeSlice, { TLikeState } from "./slices/likeSlice";
 import createUserSlice, { TUserState } from "./slices/usersSlice";
 import createFollowSlice, { TFollowState } from "./slices/followSlice";
+import createAboutsSlice, { TAboutState } from "./slices/aboutsSlice";
 
 export type TStoreState = TAuthState &
   TErrorState &
@@ -20,7 +21,8 @@ export type TStoreState = TAuthState &
   TLikeState & 
   TCommentState &
   TFollowState &
-  TUserState;
+  TUserState &
+  TAboutState;
 // Add other slices here
 
 export const useStore = create<TStoreState>()(
@@ -35,6 +37,7 @@ export const useStore = create<TStoreState>()(
       ...createLikeSlice(...a),
       ...createUserSlice(...a),
       ...createFollowSlice(...a),
+      ...createAboutsSlice(...a),
       /**ekstra slices will be add here */
     }),
     {
@@ -45,6 +48,10 @@ export const useStore = create<TStoreState>()(
 export interface ResponseData<T>{
   data: T[];
 }
+export interface ResponseSingleData<T>{
+  data: T;
+}
+
 
 if (process.env.NODE_ENV === "development") {
   mountStoreDevtool("store", useStore);
