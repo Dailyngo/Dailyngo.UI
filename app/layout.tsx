@@ -30,7 +30,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning={true}
-        className={`bg-white ${inter.className}`}
+        className={`bg-gray-100 ${inter.className}`}
       >
            <ConfigProvider
 locale={trTr}

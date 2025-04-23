@@ -1,3 +1,4 @@
+import { get } from 'http';
 import { send } from 'process';
 import qs from 'qs';
 
@@ -18,6 +19,7 @@ export default {
 	getHomePagePosts: (data: any) => `/api/Posts/homepage?${qs.stringify(data, { skipNulls: true })}`,
 	getUserPosts: (data: any) => `/api/Posts?${qs.stringify(data, { skipNulls: true })}`,
 	deletePost: (id: string) => `/api/Posts/${id}`,
+	getPostById: (data: any) => `/api/Posts/byId?${qs.stringify(data, { skipNulls: true })}`,
 
 	/** Comment */
 	createComment: () => '/api/Comments',
@@ -41,5 +43,8 @@ export default {
 	/** About */
     getOwnAbout: () => '/api/Abouts/about',
     getOtherAbout: (userId: string) => `/api/Abouts/other-about/${userId}`,
+
+	/** notifications */
+	getAllNotifications: () => '/api/Notification',
 	/** error  */
 };

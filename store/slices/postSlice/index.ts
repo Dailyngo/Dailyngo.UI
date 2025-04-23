@@ -1,6 +1,6 @@
 import { StateCreator } from "zustand";
-import { TStoreState } from "../..";
-import { createPostService, deletePostService, getHomePagePostsService, getUserPostsService } from "@/services";
+import { ResponseSingleData, TStoreState } from "../..";
+import { createPostService, deletePostService, getHomePagePostsService, getPostDetailsService, getUserPostsService } from "@/services";
 
 // Post veri tipi
 export interface PostData {
@@ -32,16 +32,15 @@ export interface TPostState {
   userPosts: PostData[];
   loading: boolean;
   error: string | null;
-  selectedPost: PostData | null;
   
   // Post Actions
   createPost: (postData: CreatePostData) => Promise<void>;
   getHomePosts: (pageNumber?: number) => Promise<void>;
   getUserPosts: (userId?: string | null, pageNumber?: number) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
+  getPostDetailService: (postId: string) => Promise<PostData | null>;
   
   // Utility functions
-  setSelectedPost: (post: PostData | null) => void;
   resetPostError: () => void;
 }
 
@@ -51,17 +50,33 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
   userPosts: [],
   loading: false,
   error: null,
-  selectedPost: null,
+
+  getPostDetailService: async (postId) => {
+    
+    try {
+      const response = await getPostDetailsService<
+			ResponseSingleData<PostData>,
+			{ postId: string }
+		>({ postId });
+      
+      return response.data.data;
+    }
+    catch (error) {
+      set({ error: 'Gönderi detayları yüklenirken bir hata oluştu.' });
+      console.error('Error fetching post details:', error);
+      return null;
+    }
+  },
   
   // Actions
   createPost: async (postData: CreatePostData) => {
     try {
-      set({ loginLoading: true, error: null });
+      set({ error: null });
       
       await createPostService(postData);
       
     } catch (error) {
-      set({ error: 'Gönderi oluşturulurken bir hata oluştu.', loginLoading: false });
+      set({ error: 'Gönderi oluşturulurken bir hata oluştu.' });
     }
   },
   
@@ -115,25 +130,15 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
       const updatedUserPosts = get().userPosts.filter(post => post.id !== postId);
       
       // Seçili gönderiyi güncelleme
-      let selectedPost = get().selectedPost;
-      if (selectedPost && selectedPost.id === postId) {
-        selectedPost = null;
-      }
-      
+
       set({ 
         posts: updatedPosts, 
         userPosts: updatedUserPosts,
-        selectedPost,
         loginLoading: false 
       });
     } catch (error) {
       set({ error: 'Gönderi silinirken bir hata oluştu.', loginLoading: false });
     }
-  },
-  
-  // Utility functions
-  setSelectedPost: (post: PostData | null) => {
-    set({ selectedPost: post });
   },
   
   resetPostError: () => {

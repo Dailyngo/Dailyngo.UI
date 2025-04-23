@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Comments from '../../../../components/homepage/comments';
 import { Avatar, Dropdown, Button } from 'antd';
 import { Icon } from '@iconify/react';
+import { PostData } from '@/store/slices/postSlice';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -13,39 +14,50 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [hasMoreComments, setHasMoreComments] = useState(true);
   const [commentExists, setCommentExists] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const { 
-    selectedPost,
+	getPostDetailService,
     getPostComments, 
     deleteComment,
     comments
   } = useStore();
 
   useEffect(() => {
-    if (!selectedPost) {
-      router.push('/'); // If no post is selected, redirect to home
-      return;
-    }
-    loadComments();
-  }, [selectedPost, params.id]);
+	const fetchPostDetail = async () => {
+	  const postDetail = await getPostDetailService(params.id);
+	  setSelectedPost(postDetail);
+	  if (!postDetail) {
+		router.push('/');
+		return;
+	  }
+	};
+	fetchPostDetail();
+  }, [params.id]);
+
+  useEffect(() => {
+    loadComments(null);
+  }, [selectedPost]);
 
   useEffect(() => {
     setCommentExists((comments[params.id] || []).length > 0);
   },[comments])
 
-  const loadComments = async () => {
+  const loadComments = async (pageNumber: number | null) => {
     if (selectedPost) {
 	  setCommentLoading(true);
-      const comments = await getPostComments(params.id,1);
+      const comments = await getPostComments(params.id,pageNumber || 1);
       setHasMoreComments(comments.length > 0);
 	  setCommentLoading(false);
+	  return comments;
     }
   };
 
   const handleLoadMoreComments = async () => {
     const newPage = commentPage + 1;
-    const newComments = await getPostComments(params.id,newPage);
+	const oldLength = comments[params.id].length;
+    const newComments = await loadComments(newPage);
     setCommentPage(newPage);
-    setHasMoreComments(newComments.length > 0);
+    setHasMoreComments(newComments ? newComments.length > 0  && oldLength !== newComments.length : false);
   };
 
 
@@ -119,11 +131,6 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 								</div>
 							</div>
 						</div>
-						<Button
-							type="text"
-							onClick={() => router.push("/")}
-							icon={<Icon icon="mdi:close" />}
-						/>
 					</div>
 
 					{/* Post content */}
@@ -161,7 +168,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 									className="text-2xl mr-2"
 								/>
 								<span className="text-sm font-medium">
-									{(comments[params.id] || []).length}
+									{selectedPost.commentCount}
 								</span>
 							</div>
 						</div>
@@ -188,8 +195,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 									<div className="text-center m-4">
 										<Button
 											type="primary"
-											onClick={handleLoadMoreComments}
-											loading={commentLoading}
+											onClick={async () => await handleLoadMoreComments()}
 										>
 											Daha Fazla Yükle
 										</Button>

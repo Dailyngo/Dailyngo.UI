@@ -3,12 +3,13 @@
 import FriendlyMessage from "@/components/FriendlyMessage";
 import { useStore } from "@/store";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import "../global.css";
 import "../satoshi.css";
 import CustomNavbar from "@/app/(main-pages)/customNavbar";
 import { SignalRHelper } from "@/lib/utils"; // Import SignalRHelper
+import path from "path";
 
 export default function RootLayout({
   children,
@@ -16,6 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [notificationCount, setNotificationCount] = useState(0);
+  const {getAllNotifications} = useStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     const signalRHelper = new SignalRHelper("notification-hub");
@@ -31,6 +34,12 @@ export default function RootLayout({
       signalRHelper.stopConnection();
     };
   }, []);
+
+  useEffect(() => {
+    if(pathname === "/notifications") {
+      getAllNotifications();
+    };
+  }, [notificationCount]);
 
   return (
     <div className="h-screen">
