@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "DailyNgo",
   description: "dailyngo.com",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.ico",
   }
 };
 
