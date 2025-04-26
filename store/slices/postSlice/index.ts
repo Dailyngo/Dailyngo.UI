@@ -33,10 +33,10 @@ export interface TPostState {
   postLoading: boolean;
   postError: string | null;
 
-  createPost: (postData: CreatePostData) => Promise<void>;
+  createPost: (postData: CreatePostData) => Promise<boolean>;
   getHomePosts: (pageNumber?: number) => Promise<void>;
   getUserPosts: (userId?: string | null, pageNumber?: number) => Promise<void>;
-  deletePost: (postId: string) => Promise<void>;
+  deletePost: (postId: string) => Promise<boolean>;
   getPostDetailService: (postId: string) => Promise<PostData | null>;
   
   resetPostError: () => void;
@@ -75,15 +75,15 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
       set({ postError: null, postLoading: true });
       
       await createPostService(postData);
-      
+
+      return true;
     } catch (error : any) {
-      set({ postError: error.response.data.messages});
-    }finally{
-      set({ postLoading: false });
+      set({ postError: error.response.data.messages, postLoading: false });
 
       setTimeout(() => {
         set({ postError: null });
       }, 3000);
+      return false;
     }
   },
   
@@ -152,13 +152,14 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
         posts: updatedPosts, 
         userPosts: updatedUserPosts
       });
+      return true;
     } catch (error : any) {
-      set({ postError: error.response.data.messages });
-    }finally{
-      set({ postLoading: false });
+      set({ postError: error.response.data.messages, postLoading: false });
       setTimeout(() => {
         set({ postError: null });
       }, 3000);
+
+      return false;
     }
   },
   

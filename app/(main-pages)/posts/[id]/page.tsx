@@ -4,58 +4,47 @@ import { useEffect, useState } from 'react';
 import { useStore } from '../../../../store';
 import { useRouter } from 'next/navigation';
 import Comments from '../../../../components/homepage/comments';
-import { Avatar, Button } from 'antd';
+import { Avatar, Button, Dropdown, Modal } from 'antd';
 import { Icon } from '@iconify/react';
 import { PostData } from '@/store/slices/postSlice';
 import { ERRORS } from '@/store/slices/errorSlice';
+import LikesModal from '../../../../components/ui/LikesModal';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [commentPage, setCommentPage] = useState(1);
-  const [hasMoreComments, setHasMoreComments] = useState(true);
-  const [commentExists, setCommentExists] = useState(true);
-  const [commentLoading, setCommentLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
+  const [liked, setLiked] = useState(selectedPost?.isLiked);
+  const [likeCount, setLikeCount] = useState(selectedPost?.likeCount);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
+
   const { 
 	getPostDetailService,
-    getPostComments, 
+    deletePost,
 	postError,
-    deleteComment,
+    addLike,
+    removeLike,
 	setErrorConfirmInfoModal,
-    comments
+	getPostLikes,
+	likes
   } = useStore();
 
-  useEffect(() => {
-	const fetchPostDetail = async () => {
-	  const postDetail = await getPostDetailService(params.id);
-	  setSelectedPost(postDetail);
-	  if (!postDetail) {
-		router.push('/');
-		return;
-	  }
-	};
-	fetchPostDetail();
-  }, [params.id]);
+	useEffect(() => {
+		const fetchPostDetail = async () => {
+			const postDetail = await getPostDetailService(params.id);
+			setSelectedPost(postDetail);
+			if (!postDetail) {
+				router.push('/');
+				return;
+			}
+			setLiked(postDetail.isLiked);
+			setLikeCount(postDetail.likeCount);
+		};
+		fetchPostDetail();
+	}, [params.id]);
 
-  useEffect(() => {
-    loadComments(null);
-  }, [selectedPost]);
 
-  useEffect(() => {
-    setCommentExists((comments[params.id] || []).length > 0);
-  },[comments])
-
-  const loadComments = async (pageNumber: number | null) => {
-    if (selectedPost) {
-	  setCommentLoading(true);
-      const comments = await getPostComments(params.id,pageNumber || 1);
-      setHasMoreComments(comments.length > 0);
-	  setCommentLoading(false);
-	  return comments;
-    }
-  };
-
-   useEffect(() => {
+    useEffect(() => {
 	  if (postError) {
 		setErrorConfirmInfoModal(
 		  ERRORS.GENERIC_INFO_AND_ERRORS,
@@ -65,59 +54,83 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 		);
 	  }
 	}, [postError]);
-  
 
-  const handleLoadMoreComments = async () => {
-    const newPage = commentPage + 1;
-	const oldLength = comments[params.id].length;
-    const newComments = await loadComments(newPage);
-    setCommentPage(newPage);
-    setHasMoreComments(newComments ? newComments.length > 0  && oldLength !== newComments.length : false);
-  };
+	const handleLike = async (e: React.MouseEvent) => {
+		e.stopPropagation(); 
 
+		if (liked) {
+			setLiked(false);
+			setLikeCount((pre) => (pre ? pre - 1 : 0));
+			await removeLike(params.id);
+		} else {
+			setLiked(true);
+			setLikeCount((pre) => (pre ? pre + 1 : 1));
+			await addLike(params.id);
+		}
+	};
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      if (!selectedPost) return;
-      
-      const postId = params.id;
-      const commentIndex = comments[postId].findIndex(
-        (comment: any) => comment.id === commentId
-      );
+	const handleShowLikes = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		await getPostLikes(params.id);
+		setIsLikesModalVisible(true);
+	};
 
-      if (commentIndex === -1) {
-        console.error('Yorum bulunamadı:', commentId);
-        return Promise.reject(new Error('Yorum bulunamadı'));
-      }
+	const handleFollow = async (userId: string, isFollowing: boolean) => {
+		try {
+			// TODO: Implement follow/unfollow API call
+			console.log(isFollowing ? 'Unfollow' : 'Follow', userId);
+		} catch (error) {
+			console.error('Takip işlemi sırasında bir hata oluştu:', error);
+		}
+	};
 
-      const updatedComments = [...comments[postId]];
-      updatedComments.splice(commentIndex, 1);
+	// Tarih formatını düzenleme
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('tr-TR', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+		});
+	};
 
-      comments[postId] = updatedComments;
-      setCommentExists(updatedComments.length > 0);
+	if (!selectedPost) {
+		return null;
+	}
+	
+	const handleUserClick = () => {
+		router.push(`/users/${selectedPost.userId}`);
+	};
 
-      await deleteComment(commentId,postId); 
-      
-    } catch (error) {
-      console.error('Yorum silinirken bir hata oluştu:', error);
-    }
-  };
+	const dropdownItems = [
+		...(selectedPost.isOwner ? [
+			{ key: '2', label: 'Sil' },
+			{ key: '3', label: 'Düzenle' }
+		] : [{ key: '1', label: 'Rapor Et' }])
+	];
 
-  // Tarih formatını düzenleme
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+	const handleMenuClick = ({ key }: { key: string }) => {
+		if (key === '2') {
+			setIsDeleteModalVisible(true);
+		} else if (key === '3') {
+			// Handle edit logic here
+		}
+	};
 
-  if (!selectedPost) {
-    return null;
-  }
+	const handleDeletePost = async () => {
+		const isSuccess = await deletePost(selectedPost.id);
+		setIsDeleteModalVisible(false);
+		if(isSuccess){
+			setErrorConfirmInfoModal(
+				ERRORS.GENERIC_INFO_AND_ERRORS,
+				"Hata",
+				"Gönderi başarıyla silindi.",
+				"success"
+				);
+		}
+	};
 
   return (
 		<main className="py-6 px-4 bg-gray-100 min-h-screen">
@@ -129,6 +142,8 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 							<Avatar
 								src={selectedPost.userProfileImage || undefined}
 								size={40}
+								onClick={handleUserClick}
+								className="cursor-pointer"
 							>
 								{!selectedPost.userProfileImage &&
 									selectedPost.userName
@@ -136,14 +151,31 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 										.toUpperCase()}
 							</Avatar>
 							<div>
-								<div className="font-medium text-gray-800">
-									{selectedPost.userName}
+								<div
+									className="font-medium text-gray-800"
+									onClick={handleUserClick}
+								>
+									<span className="cursor-pointer hover:underline font-bold">
+										@{selectedPost.userName}
+									</span>
 								</div>
 								<div className="text-xs text-gray-500">
 									{formatDate(selectedPost.postDate)}
 								</div>
 							</div>
 						</div>
+						<Dropdown
+							menu={{
+								items: dropdownItems,
+								onClick: handleMenuClick,
+							}}
+							placement="bottomRight"
+							trigger={["click"]}
+						>
+							<Button type="text" onClick={(e) => e.stopPropagation()}>
+								<Icon icon="mdi:dots-vertical" />
+							</Button>
+						</Dropdown>
 					</div>
 
 					{/* Post content */}
@@ -158,20 +190,27 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					<div className="px-4 py-4 flex justify-between border-t border-gray-100">
 						<div className="flex items-center space-x-8">
 							<div className="flex items-center text-gray-500">
-								<Icon
-									icon={
-										selectedPost.isLiked
-											? "mdi:heart"
-											: "mdi:heart-outline"
-									}
-									className={`text-2xl mr-2 ${
-										selectedPost.isLiked
-											? "text-red-500"
-											: ""
-									}`}
-								/>
-								<span className="text-sm font-medium">
-									{selectedPost.likeCount}
+								<button
+									onClick={handleLike}
+									className="flex items-center text-gray-500 hover:text-red-500 transition-colors pr-1"
+								>
+									{liked ? (
+										<Icon
+											icon="mdi:heart"
+											className="text-red-500 text-2xl mr-2"
+										/>
+									) : (
+										<Icon
+											icon="mdi:heart-outline"
+											className="text-2xl mr-2"
+										/>
+									)}
+								</button>
+								<span
+									className="text-sm font-medium hover:underline cursor-pointer"
+									onClick={handleShowLikes}
+								>
+									{likeCount}
 								</span>
 							</div>
 
@@ -188,40 +227,38 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					</div>
 
 					{/* Comments section */}
-					{commentLoading ? (
-						<div className="flex justify-center items-center py-4 border-t border-gray-100">
-							<Icon
-								icon="line-md:loading-loop"
-								width="24"
-								height="24"
-							/>
-						</div>
-					) : (
-						<>
-							<Comments
-								postId={params.id}
-								comments={comments[params.id] || []}
-								onDeleteComment={handleDeleteComment}
-							/>
-							{commentExists &&
-								(hasMoreComments ? (
-									<div className="text-center m-4">
-										<Button
-											type="primary"
-											onClick={async () => await handleLoadMoreComments()}
-										>
-											Daha Fazla Yükle
-										</Button>
-									</div>
-								) : (
-									<div className="text-center m-4 text-gray-500">
-										Yorumların sonuna geldin.
-									</div>
-								))}
-						</>
+					{selectedPost && (
+						<Comments
+							postId={params.id}
+						/>
 					)}
 				</div>
 			</div>
+			{/* Silme Onay Modalı */}
+			<Modal
+				title="Gönderiyi Sil"
+				open={isDeleteModalVisible}
+				onOk={handleDeletePost}
+				onCancel={(e) => {
+					e.stopPropagation();
+					setIsDeleteModalVisible(false);
+				}}
+				okText="Sil"
+				cancelText="İptal"
+			>
+				<p>
+					Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem
+					geri alınamaz.
+				</p>
+			</Modal>
+
+			{/* Beğeniler Modalı */}
+			<LikesModal
+				isVisible={isLikesModalVisible}
+				onClose={() => setIsLikesModalVisible(false)}
+				postId={params.id}
+				onFollow={handleFollow}
+			/>
 		</main>
   );
 } 

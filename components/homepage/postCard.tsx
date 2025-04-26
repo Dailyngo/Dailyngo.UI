@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
 import { LikeData } from '../../store/slices/likeSlice';
+import { ERRORS } from '@/store/slices/errorSlice';
+import LikesModal from '../ui/LikesModal';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const router = useRouter();
@@ -16,16 +18,15 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     likes,
     addLike,
     removeLike,
-    getPostComments,
-    comments,
-    loginLoading: commentLoading
+	postError,
+	setErrorConfirmInfoModal
   } = useStore();
   
   const [liked, setLiked] = useState(post.isLiked);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
 
   const handlePostClick = () => {
     router.push(`/posts/${post.id}`);
@@ -51,12 +52,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 
   const handleShowLikes = async (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    if(!post.isOwner) return;
     if (!showLikes) {
       await getPostLikes(post.id);
     }
-    setShowLikes(!showLikes);
+    setIsLikesModalVisible(true);
   };
 
   const handleFollow = async (userId: string, isFollowing: boolean) => {
@@ -68,14 +67,18 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
-  const handleDeletePost = async () => {
-    try {
-      await deletePost(post.id);
-      setIsDeleteModalVisible(false);
-    } catch (error) {
-      console.error('Gönderi silinirken bir hata oluştu:', error);
-    }
-  };
+	const handleDeletePost = async () => {
+		const isSuccess = await deletePost(post.id);
+		setIsDeleteModalVisible(false);
+		if(isSuccess){
+			setErrorConfirmInfoModal(
+				ERRORS.GENERIC_INFO_AND_ERRORS,
+				"Hata",
+				"Gönderi başarıyla silindi.",
+				"success"
+				);
+		}
+	};
 
   // Tarih formatını düzenleme
   const formatDate = (dateString: string) => {
@@ -104,8 +107,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
-  const handleUserClick = (e: React.MouseEvent) => {
-	e.stopPropagation(); 
+  const handleUserClick = () => {
 	router.push(`/users/${post.userId}`);
   };
 
@@ -113,19 +115,24 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 		<div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4 hover:shadow-xl transition-shadow">
 			{/* Üst kısım - Kullanıcı bilgisi ve tarih */}
 			<div className="p-4 flex justify-between items-center">
-				<div
-					className="flex items-center cursor-pointer space-x-3"
-					onClick={handlePostClick}
-				>
-					<Avatar src={post.userProfileImage || undefined} size={40}>
+				<div className="flex items-center space-x-3">
+					<Avatar
+						src={post.userProfileImage || undefined}
+						size={40}
+						onClick={handleUserClick}
+						className="cursor-pointer"
+					>
 						{!post.userProfileImage &&
 							post.userName.charAt(0).toUpperCase()}
 					</Avatar>
 					<div>
-						<div className="font-medium text-gray-800"
+						<div
+							className="font-medium text-gray-800"
 							onClick={handleUserClick}
 						>
-							@{post.userName}
+							<span className="cursor-pointer hover:underline font-bold">
+								@{post.userName}
+							</span>
 						</div>
 						<div className="text-xs text-gray-500">
 							{formatDate(post.postDate)}
@@ -196,53 +203,6 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 				</div>
 			</div>
 
-			{/* Beğeniler Listesi */}
-			{showLikes && likes[post.id] && (
-				<div className="border-t border-gray-100 p-4">
-					<h3 className="font-medium text-gray-800 mb-3">
-						Beğenenler
-					</h3>
-					<div className="space-y-3">
-						{likes[post.id].map((like: LikeData) => (
-							<div
-								key={like.userId}
-								className="flex items-center justify-between"
-							>
-								<div className="flex items-center space-x-3">
-									<Avatar size={32}>
-										{like.fullName.charAt(0).toUpperCase()}
-									</Avatar>
-									<span className="font-medium text-gray-800">
-										{like.fullName}
-									</span>
-								</div>
-								<Button
-									type={
-										like.isFollowing ? "default" : "primary"
-									}
-									onClick={() =>
-										handleFollow(
-											like.userId,
-											like.isFollowing
-										)
-									}
-									className={
-										like.isFollowing
-											? "bg-gray-100 hover:bg-gray-200"
-											: ""
-									}
-									size="small"
-								>
-									{like.isFollowing
-										? "Takipten Çık"
-										: "Takip Et"}
-								</Button>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
-
 			{/* Silme Onay Modalı */}
 			<Modal
 				title="Gönderiyi Sil"
@@ -260,6 +220,14 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 					geri alınamaz.
 				</p>
 			</Modal>
+
+			{/* Beğeniler Modalı */}
+			<LikesModal
+				isVisible={isLikesModalVisible}
+				onClose={() => setIsLikesModalVisible(false)}
+				postId={post.id}
+				onFollow={handleFollow}
+			/>
 		</div>
   );
 };
