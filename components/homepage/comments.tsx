@@ -309,7 +309,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 											.toUpperCase()}
 									</Avatar>
 									<div className="flex-1">
-										<div className="bg-gray-50 p-3 rounded-lg">
+										<div className="bg-gray-50 p-3 rounded-lg min-w-0">
 											<div className="flex justify-between">
 												<div className='cursor-pointer' onClick={() => handleUserClick(comment.userId) }>
                           <span className="cursor-pointer hover:underline font-bold text-sm">
@@ -322,7 +322,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 													)}
 												</span>
 											</div>
-											<p className="mt-1 text-sm">
+											<p className="mt-1 text-sm break-all w-full whitespace-pre-wrap">
 												{comment.content}
 											</p>
 										</div>
@@ -377,7 +377,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 																.toUpperCase()}
 														</Avatar>
 														<div className="flex-1">
-															<div className="bg-gray-50 p-3 rounded-lg">
+															<div className="bg-gray-50 p-3 rounded-lg min-w-0">
 																<div className="flex justify-between">
 																	<span className="font-medium text-sm">
 																		{
@@ -390,7 +390,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 																		)}
 																	</span>
 																</div>
-																<p className="mt-1 text-sm">
+																<p className="mt-1 text-sm break-all w-full whitespace-pre-wrap">
 																	{
 																		reply.content
 																	}
