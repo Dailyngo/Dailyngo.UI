@@ -8,6 +8,7 @@ import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
 import { LikeData } from '../../store/slices/likeSlice';
 import { ERRORS } from '@/store/slices/errorSlice';
+import LikesModal from '../ui/LikesModal';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const router = useRouter();
@@ -25,6 +26,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
+  const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
 
   const handlePostClick = () => {
     router.push(`/posts/${post.id}`);
@@ -50,12 +52,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 
   const handleShowLikes = async (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    if(!post.isOwner) return;
     if (!showLikes) {
       await getPostLikes(post.id);
     }
-    setShowLikes(!showLikes);
+    setIsLikesModalVisible(true);
   };
 
   const handleFollow = async (userId: string, isFollowing: boolean) => {
@@ -203,53 +203,6 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 				</div>
 			</div>
 
-			{/* Beğeniler Listesi */}
-			{showLikes && likes[post.id] && (
-				<div className="border-t border-gray-100 p-4">
-					<h3 className="font-medium text-gray-800 mb-3">
-						Beğenenler
-					</h3>
-					<div className="space-y-3">
-						{likes[post.id].map((like: LikeData) => (
-							<div
-								key={like.userId}
-								className="flex items-center justify-between"
-							>
-								<div className="flex items-center space-x-3">
-									<Avatar size={32}>
-										{like.fullName.charAt(0).toUpperCase()}
-									</Avatar>
-									<span className="font-medium text-gray-800">
-										{like.fullName}
-									</span>
-								</div>
-								<Button
-									type={
-										like.isFollowing ? "default" : "primary"
-									}
-									onClick={() =>
-										handleFollow(
-											like.userId,
-											like.isFollowing
-										)
-									}
-									className={
-										like.isFollowing
-											? "bg-gray-100 hover:bg-gray-200"
-											: ""
-									}
-									size="small"
-								>
-									{like.isFollowing
-										? "Takipten Çık"
-										: "Takip Et"}
-								</Button>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
-
 			{/* Silme Onay Modalı */}
 			<Modal
 				title="Gönderiyi Sil"
@@ -267,6 +220,14 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 					geri alınamaz.
 				</p>
 			</Modal>
+
+			{/* Beğeniler Modalı */}
+			<LikesModal
+				isVisible={isLikesModalVisible}
+				onClose={() => setIsLikesModalVisible(false)}
+				postId={post.id}
+				onFollow={handleFollow}
+			/>
 		</div>
   );
 };

@@ -8,6 +8,7 @@ import { Avatar, Button, Dropdown, Modal } from 'antd';
 import { Icon } from '@iconify/react';
 import { PostData } from '@/store/slices/postSlice';
 import { ERRORS } from '@/store/slices/errorSlice';
+import LikesModal from '../../../../components/ui/LikesModal';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [liked, setLiked] = useState(selectedPost?.isLiked);
   const [likeCount, setLikeCount] = useState(selectedPost?.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
 
   const { 
 	getPostDetailService,
@@ -22,7 +24,9 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 	postError,
     addLike,
     removeLike,
-	setErrorConfirmInfoModal
+	setErrorConfirmInfoModal,
+	getPostLikes,
+	likes
   } = useStore();
 
 	useEffect(() => {
@@ -62,6 +66,21 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 			setLiked(true);
 			setLikeCount((pre) => (pre ? pre + 1 : 1));
 			await addLike(params.id);
+		}
+	};
+
+	const handleShowLikes = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		await getPostLikes(params.id);
+		setIsLikesModalVisible(true);
+	};
+
+	const handleFollow = async (userId: string, isFollowing: boolean) => {
+		try {
+			// TODO: Implement follow/unfollow API call
+			console.log(isFollowing ? 'Unfollow' : 'Follow', userId);
+		} catch (error) {
+			console.error('Takip işlemi sırasında bir hata oluştu:', error);
 		}
 	};
 
@@ -187,7 +206,10 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 										/>
 									)}
 								</button>
-								<span className="text-sm font-medium">
+								<span
+									className="text-sm font-medium hover:underline cursor-pointer"
+									onClick={handleShowLikes}
+								>
 									{likeCount}
 								</span>
 							</div>
@@ -229,6 +251,14 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					geri alınamaz.
 				</p>
 			</Modal>
+
+			{/* Beğeniler Modalı */}
+			<LikesModal
+				isVisible={isLikesModalVisible}
+				onClose={() => setIsLikesModalVisible(false)}
+				postId={params.id}
+				onFollow={handleFollow}
+			/>
 		</main>
   );
 } 

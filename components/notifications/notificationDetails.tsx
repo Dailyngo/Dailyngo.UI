@@ -27,14 +27,18 @@ const NotificationDetails = () => {
     }
   };
 
-  const getNotificationMessage = (notif : OtherNotification) => {
-    switch(notif.notificationType) {
+  const truncateMessage = (message: string, maxLength: number) => {
+    return message.length > maxLength ? `${message.slice(0, maxLength)}...` : message;
+  };
+
+  const getNotificationMessage = (notif: OtherNotification) => {
+    switch (notif.notificationType) {
       case 0:
-        return `${notif.senderName} gönderinizi beğendi`;
+        return truncateMessage(`${notif.senderName} gönderinizi beğendi`, 75);
       case 1:
-        return `${notif.senderName} gönderinize yorum yaptı: ${notif.text}`;
+        return truncateMessage(`${notif.senderName} gönderinize yorum yaptı: ${notif.text}`, 75);
       default:
-        return `${notif.senderName} yeni bir bildirim gönderdi`;
+        return truncateMessage(`${notif.senderName} yeni bir bildirim gönderdi`, 75);
     }
   }
 
@@ -55,7 +59,9 @@ const NotificationDetails = () => {
             </div>
 
             <div className="flex flex-col justify-center flex-grow">
-              <p className="text-sm font-medium text-gray-800 leading-tight">
+              <p
+                className="text-sm font-medium text-gray-800 leading-tight break-words"
+              >
                 {getNotificationMessage(notif)}
               </p>
               <p className="text-xs text-gray-500 mt-1">

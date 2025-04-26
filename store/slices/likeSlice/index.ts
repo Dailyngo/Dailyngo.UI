@@ -48,27 +48,14 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
         queryParams: { pageNumber }
       });
       
-      if (response?.data?.data) {
-        // Beğenileri sakla
-        set({ 
-          likes: { 
-            ...get().likes, 
-            [postId]: response.data.data 
-          },
-        });
-        
-        return response.data.data;
-      } else {
-        // Veri yoksa boş dizi döndür
-        set({ 
-          likes: { 
-            ...get().likes, 
-            [postId]: [] 
-          },
-        });
-        
-        return [];
-      }
+      set({ 
+        likes: { 
+          ...get().likes, 
+          [postId]: [...get().likes[postId] ?? [], ...response.data.data]
+        },
+      });
+      
+      return response.data.data;
     } catch (error) {
       console.error('Beğeniler yüklenirken bir hata oluştu:', error);
       return [];
