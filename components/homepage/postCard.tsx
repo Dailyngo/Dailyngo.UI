@@ -90,11 +90,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   };
 
   const dropdownItems = [
-    { key: '1', label: 'Rapor Et' },
     ...(post.isOwner ? [
       { key: '2', label: 'Sil' },
       { key: '3', label: 'Düzenle' }
-    ] : [])
+    ] : [{ key: '1', label: 'Rapor Et' }])
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {

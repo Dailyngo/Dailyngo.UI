@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useStore } from '../../../../store';
 import { useRouter } from 'next/navigation';
 import Comments from '../../../../components/homepage/comments';
-import { Avatar, Dropdown, Button } from 'antd';
+import { Avatar, Button } from 'antd';
 import { Icon } from '@iconify/react';
 import { PostData } from '@/store/slices/postSlice';
+import { ERRORS } from '@/store/slices/errorSlice';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -18,7 +19,9 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const { 
 	getPostDetailService,
     getPostComments, 
+	postError,
     deleteComment,
+	setErrorConfirmInfoModal,
     comments
   } = useStore();
 
@@ -51,6 +54,18 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 	  return comments;
     }
   };
+
+   useEffect(() => {
+	  if (postError) {
+		setErrorConfirmInfoModal(
+		  ERRORS.GENERIC_INFO_AND_ERRORS,
+		  "Hata",
+		  postError,
+		  "error"
+		);
+	  }
+	}, [postError]);
+  
 
   const handleLoadMoreComments = async () => {
     const newPage = commentPage + 1;

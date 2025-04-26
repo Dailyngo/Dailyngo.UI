@@ -1,31 +1,40 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../../store';
 import { Card, Button } from 'antd';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
+import { ERRORS } from '@/store/slices/errorSlice';
 
 // Dynamically import ReactQuill since it requires the browser
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const CreatePostForm: React.FC = () => {
-  const { createPost } = useStore();
-  const [loading, setLoading] = useState(false);
+  const { createPost,postError,setErrorConfirmInfoModal,postLoading} = useStore();
   const [content, setContent] = useState<string | null>();
 
   const handleSubmit = async () => {
     if (!content) return;
-    setLoading(true);
     try {
       await createPost({ content });
     } catch (error) {
       console.error('Gönderi oluşturulurken bir hata oluştu:', error);
     }finally {
-      setLoading(false);
       setContent(null);
     }
   };
+
+  useEffect(() => {
+    if (postError) {
+      setErrorConfirmInfoModal(
+        ERRORS.GENERIC_INFO_AND_ERRORS,
+        "Hata",
+        postError,
+        "error"
+      );
+    }
+  }, [postError]);
 
   const modules = {
     toolbar: [
@@ -60,7 +69,7 @@ const CreatePostForm: React.FC = () => {
           <Button
             type="primary"
             onClick={handleSubmit}
-            loading={loading}
+            loading={postLoading}
             disabled={!content || content === '<p><br></p>'}
           >
             Paylaş
