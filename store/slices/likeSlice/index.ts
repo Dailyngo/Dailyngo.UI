@@ -17,7 +17,6 @@ interface LikeResponseData {
 
 export interface TLikeState {
   likes: { [postId: string]: LikeData[] };
-  loading: boolean;
   error: string | null;
   
   // Like Actions
@@ -32,14 +31,11 @@ export interface TLikeState {
 const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get) => ({
   // State
   likes: {},
-  loading: false,
   error: null,
   
   // Actions
   getPostLikes: async (postId: string, pageNumber: number = 1) => {
     try {
-      set({ loginLoading: true, error: null });
-      
       // Eğer beğeniler zaten yüklendiyse, önbellekten getir
       if (get().likes[postId] && get().likes[postId].length > 0 && pageNumber === 1) {
         set({ loginLoading: false });
@@ -59,7 +55,6 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
             ...get().likes, 
             [postId]: response.data.data 
           },
-          loginLoading: false 
         });
         
         return response.data.data;
@@ -70,13 +65,11 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
             ...get().likes, 
             [postId]: [] 
           },
-          loginLoading: false 
         });
         
         return [];
       }
     } catch (error) {
-      set({ loginLoading: false });
       console.error('Beğeniler yüklenirken bir hata oluştu:', error);
       return [];
     }
@@ -84,33 +77,23 @@ const createLikeSlice: StateCreator<TStoreState, [], [], TLikeState> = (set, get
   
   addLike: async (postId: string) => {
     try {
-      set({ loginLoading: true, error: null });
       
       // API'ye beğeni ekleme isteği gönder
       await addLikeService(postId);
       
-      // Beğenileri yeniden yükle
-      await get().getPostLikes(postId);
-      
     } catch (error) {
       console.error('Beğeni eklenirken bir hata oluştu:', error);
-      set({ error: 'Beğeni eklenirken bir hata oluştu.', loginLoading: false });
     }
   },
   
   removeLike: async (postId: string) => {
     try {
-      set({ loginLoading: true, error: null });
       
       // API'ye beğeni silme isteği gönder
       await removeLikeService(postId);
       
-      // Beğenileri yeniden yükle
-      await get().getPostLikes(postId);
-      
     } catch (error) {
       console.error('Beğeni silinirken bir hata oluştu:', error);
-      set({ error: 'Beğeni silinirken bir hata oluştu.', loginLoading: false });
     }
   },
   

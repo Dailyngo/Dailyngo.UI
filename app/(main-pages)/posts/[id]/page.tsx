@@ -11,51 +11,36 @@ import { ERRORS } from '@/store/slices/errorSlice';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [commentPage, setCommentPage] = useState(1);
-  const [hasMoreComments, setHasMoreComments] = useState(true);
-  const [commentExists, setCommentExists] = useState(true);
-  const [commentLoading, setCommentLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
+  const [liked, setLiked] = useState(selectedPost?.isLiked);
+  const [likeCount, setLikeCount] = useState(selectedPost?.likeCount);
   const { 
 	getPostDetailService,
     getPostComments, 
 	postError,
     deleteComment,
+    addLike,
+    removeLike,
 	setErrorConfirmInfoModal,
     comments
   } = useStore();
 
-  useEffect(() => {
-	const fetchPostDetail = async () => {
-	  const postDetail = await getPostDetailService(params.id);
-	  setSelectedPost(postDetail);
-	  if (!postDetail) {
-		router.push('/');
-		return;
-	  }
-	};
-	fetchPostDetail();
-  }, [params.id]);
+	useEffect(() => {
+		const fetchPostDetail = async () => {
+			const postDetail = await getPostDetailService(params.id);
+			setSelectedPost(postDetail);
+			if (!postDetail) {
+				router.push('/');
+				return;
+			}
+			setLiked(postDetail.isLiked);
+			setLikeCount(postDetail.likeCount);
+		};
+		fetchPostDetail();
+	}, [params.id]);
 
-  useEffect(() => {
-    loadComments(null);
-  }, [selectedPost]);
 
-  useEffect(() => {
-    setCommentExists((comments[params.id] || []).length > 0);
-  },[comments])
-
-  const loadComments = async (pageNumber: number | null) => {
-    if (selectedPost) {
-	  setCommentLoading(true);
-      const comments = await getPostComments(params.id,pageNumber || 1);
-      setHasMoreComments(comments.length > 0);
-	  setCommentLoading(false);
-	  return comments;
-    }
-  };
-
-   useEffect(() => {
+    useEffect(() => {
 	  if (postError) {
 		setErrorConfirmInfoModal(
 		  ERRORS.GENERIC_INFO_AND_ERRORS,
@@ -65,59 +50,48 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 		);
 	  }
 	}, [postError]);
-  
 
-  const handleLoadMoreComments = async () => {
-    const newPage = commentPage + 1;
-	const oldLength = comments[params.id].length;
-    const newComments = await loadComments(newPage);
-    setCommentPage(newPage);
-    setHasMoreComments(newComments ? newComments.length > 0  && oldLength !== newComments.length : false);
-  };
+	const handleLike = async (e: React.MouseEvent) => {
+		e.stopPropagation(); 
 
+		if (liked) {
+			setLiked(false);
+			setLikeCount((pre) => (pre ? pre - 1 : 0));
+			await removeLike(params.id);
+		} else {
+			setLiked(true);
+			setLikeCount((pre) => (pre ? pre + 1 : 1));
+			await addLike(params.id);
+		}
+	};
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      if (!selectedPost) return;
-      
-      const postId = params.id;
-      const commentIndex = comments[postId].findIndex(
-        (comment: any) => comment.id === commentId
-      );
+	const handleDeleteComment = async (commentId: string) => {
+			try {
+				if (!selectedPost) return;
 
-      if (commentIndex === -1) {
-        console.error('Yorum bulunamadı:', commentId);
-        return Promise.reject(new Error('Yorum bulunamadı'));
-      }
+				const postId = params.id;
 
-      const updatedComments = [...comments[postId]];
-      updatedComments.splice(commentIndex, 1);
+				await deleteComment(commentId, postId);
+			} catch (error) {
+				console.error("Yorum silinirken bir hata oluştu:", error);
+			}
+	};
 
-      comments[postId] = updatedComments;
-      setCommentExists(updatedComments.length > 0);
+	// Tarih formatını düzenleme
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('tr-TR', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+		});
+	};
 
-      await deleteComment(commentId,postId); 
-      
-    } catch (error) {
-      console.error('Yorum silinirken bir hata oluştu:', error);
-    }
-  };
-
-  // Tarih formatını düzenleme
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (!selectedPost) {
-    return null;
-  }
+	if (!selectedPost) {
+		return null;
+	}
 
   return (
 		<main className="py-6 px-4 bg-gray-100 min-h-screen">
@@ -158,20 +132,24 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					<div className="px-4 py-4 flex justify-between border-t border-gray-100">
 						<div className="flex items-center space-x-8">
 							<div className="flex items-center text-gray-500">
-								<Icon
-									icon={
-										selectedPost.isLiked
-											? "mdi:heart"
-											: "mdi:heart-outline"
-									}
-									className={`text-2xl mr-2 ${
-										selectedPost.isLiked
-											? "text-red-500"
-											: ""
-									}`}
-								/>
+								<button
+									onClick={handleLike}
+									className="flex items-center text-gray-500 hover:text-red-500 transition-colors pr-1"
+								>
+									{liked ? (
+										<Icon
+											icon="mdi:heart"
+											className="text-red-500 text-2xl mr-2"
+										/>
+									) : (
+										<Icon
+											icon="mdi:heart-outline"
+											className="text-2xl mr-2"
+										/>
+									)}
+								</button>
 								<span className="text-sm font-medium">
-									{selectedPost.likeCount}
+									{likeCount}
 								</span>
 							</div>
 
@@ -188,37 +166,11 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					</div>
 
 					{/* Comments section */}
-					{commentLoading ? (
-						<div className="flex justify-center items-center py-4 border-t border-gray-100">
-							<Icon
-								icon="line-md:loading-loop"
-								width="24"
-								height="24"
-							/>
-						</div>
-					) : (
-						<>
-							<Comments
-								postId={params.id}
-								comments={comments[params.id] || []}
-								onDeleteComment={handleDeleteComment}
-							/>
-							{commentExists &&
-								(hasMoreComments ? (
-									<div className="text-center m-4">
-										<Button
-											type="primary"
-											onClick={async () => await handleLoadMoreComments()}
-										>
-											Daha Fazla Yükle
-										</Button>
-									</div>
-								) : (
-									<div className="text-center m-4 text-gray-500">
-										Yorumların sonuna geldin.
-									</div>
-								))}
-						</>
+					{selectedPost && (
+						<Comments
+							postId={params.id}
+							onDeleteComment={handleDeleteComment}
+						/>
 					)}
 				</div>
 			</div>

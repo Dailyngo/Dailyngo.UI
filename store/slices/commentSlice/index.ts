@@ -60,9 +60,9 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
   
   getPostComments: async (postId: string,pageNumber?: number ) => {
     try {
-      // Eğer yorumlar zaten yüklendiyse, önbellekten getir
-      if (get().comments[postId] && get().comments[postId].length > 0) {
-        return get().comments[postId];
+      const existingComments = get().comments[postId];
+      if (existingComments && existingComments.length > 0 && (pageNumber === undefined || pageNumber === 1)) {
+        return existingComments;
       }
       
       // API'den yorumları getir
@@ -70,27 +70,13 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
         { postId , queryParams: { pageNumber:  pageNumber }}
       );
       
-      if (response?.data?.data) {
-        // Yorumları sakla
-        set({ 
-          comments: { 
-            ...get().comments, 
-            [postId]: response.data.data 
-          }
-        });
-        
-        return response.data.data;
-      } else {
-        // Veri yoksa boş dizi döndür
-        set({ 
-          comments: { 
-            ...get().comments, 
-            [postId]: [] 
-          }
-        });
-        
-        return [];
-      }
+      set({ comments: {
+        ...get().comments,
+        [postId]: [...get().comments[postId]??[], ...response.data.data]
+      } });
+      
+      return response.data.data;
+
     } catch (error) {
       console.error('Yorumlar yüklenirken bir hata oluştu:', error);
       return [];

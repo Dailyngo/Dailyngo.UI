@@ -15,14 +15,17 @@ const CreatePostForm: React.FC = () => {
   const [content, setContent] = useState<string | null>();
 
   const handleSubmit = async () => {
-    if (!content) return;
-    try {
-      await createPost({ content });
-    } catch (error) {
-      console.error('Gönderi oluşturulurken bir hata oluştu:', error);
-    }finally {
-      setContent(null);
-    }
+		if (!content) return;
+		await createPost({ content });
+		setContent(null);
+    if(postError !== null){
+			setErrorConfirmInfoModal(
+				ERRORS.GENERIC_INFO_AND_ERRORS,
+				"Hata",
+				"Gönderi Başarılı bir şekilde paylaşıldı.",
+				"success"
+				);
+		}
   };
 
   useEffect(() => {

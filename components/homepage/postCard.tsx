@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useStore } from '../../store';
 import { PostData } from '../../store/slices/postSlice';
 import { LikeData } from '../../store/slices/likeSlice';
+import { ERRORS } from '@/store/slices/errorSlice';
 
 const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const router = useRouter();
@@ -16,16 +17,14 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     likes,
     addLike,
     removeLike,
-    getPostComments,
-    comments,
-    loginLoading: commentLoading
+	postError,
+	setErrorConfirmInfoModal
   } = useStore();
   
   const [liked, setLiked] = useState(post.isLiked);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
-  const [showComments, setShowComments] = useState(false);
 
   const handlePostClick = () => {
     router.push(`/posts/${post.id}`);
@@ -68,14 +67,18 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
-  const handleDeletePost = async () => {
-    try {
-      await deletePost(post.id);
-      setIsDeleteModalVisible(false);
-    } catch (error) {
-      console.error('Gönderi silinirken bir hata oluştu:', error);
-    }
-  };
+	const handleDeletePost = async () => {
+		await deletePost(post.id);
+		setIsDeleteModalVisible(false);
+		if(!postError){
+			setErrorConfirmInfoModal(
+				ERRORS.GENERIC_INFO_AND_ERRORS,
+				"Hata",
+				"Gönderi başarıyla silindi.",
+				"success"
+				);
+		}
+	};
 
   // Tarih formatını düzenleme
   const formatDate = (dateString: string) => {
@@ -104,8 +107,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
     }
   };
 
-  const handleUserClick = (e: React.MouseEvent) => {
-	e.stopPropagation(); 
+  const handleUserClick = () => {
 	router.push(`/users/${post.userId}`);
   };
 
@@ -113,19 +115,24 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 		<div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-4 hover:shadow-xl transition-shadow">
 			{/* Üst kısım - Kullanıcı bilgisi ve tarih */}
 			<div className="p-4 flex justify-between items-center">
-				<div
-					className="flex items-center cursor-pointer space-x-3"
-					onClick={handlePostClick}
-				>
-					<Avatar src={post.userProfileImage || undefined} size={40}>
+				<div className="flex items-center space-x-3">
+					<Avatar
+						src={post.userProfileImage || undefined}
+						size={40}
+						onClick={handleUserClick}
+						className="cursor-pointer"
+					>
 						{!post.userProfileImage &&
 							post.userName.charAt(0).toUpperCase()}
 					</Avatar>
 					<div>
-						<div className="font-medium text-gray-800"
+						<div
+							className="font-medium text-gray-800"
 							onClick={handleUserClick}
 						>
-							@{post.userName}
+							<span className="cursor-pointer hover:underline font-bold">
+								@{post.userName}
+							</span>
 						</div>
 						<div className="text-xs text-gray-500">
 							{formatDate(post.postDate)}

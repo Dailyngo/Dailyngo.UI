@@ -2,7 +2,7 @@
 
 import { Avatar, Input, Button } from 'antd';
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { CreateCommentData } from '@/store/slices/commentSlice';
 import { useStore } from '../../store';
 
@@ -20,21 +20,26 @@ interface CommentData {
 
 interface CommentsProps {
   postId: string;
-  comments: CommentData[];
   onDeleteComment: (commentId: string) => Promise<void>;
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, onDeleteComment }) => {
-  const [comments, setComments] = useState<CommentData[]>(initialComments);
+const Comments: React.FC<CommentsProps> = ({ postId, onDeleteComment }) => {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyToUserName, setReplyToUserName] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [mainComments, setMainComments] = useState<CommentData[]>([]);
+  const [replies, setReplies] = useState<{ [key: string]: CommentData[] }>({});
+  const [hasMoreComments, setHasMoreComments] = useState(true);
+  const [commentExists, setCommentExists] = useState(true);
+  const [commentPage, setCommentPage] = useState(1);
+  const [commentLoading, setCommentLoading] = useState(false);
 
   const {  
       createComment,
       getPostComments,
+      comments,
       loginLoading: loading
     } = useStore();
 
@@ -44,7 +49,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
     const replies: { [key: string]: CommentData[] } = {};
 
     // Önce ana yorumları ve yanıtları ayır
-    comments.forEach(comment => {
+    (comments[postId] ?? []).forEach(comment => {
       if (!comment.replyCommentId) {
         mainComments.push(comment);
       } else {
@@ -55,7 +60,8 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
       }
     });
 
-    return { mainComments, replies };
+    setMainComments(mainComments);
+    setReplies(replies);
   };
 
   // Tarih formatını düzenleme
@@ -134,7 +140,36 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
     setReplyContent('');
   };
 
-  const { mainComments, replies } = organizeComments();
+  useEffect(() => {
+    console.log('YEni YOrumlar:', comments[postId]);
+    setCommentExists((comments[postId] || []).length > 0);
+    organizeComments();
+  }, [comments]);
+
+  useEffect(() => {
+    loadComments(1);
+  },[postId]);
+
+  const loadComments = async (pageNumber: number | null) => {
+      setCommentLoading(true);
+      const newComments = await getPostComments(postId,pageNumber || 1);
+      setHasMoreComments(newComments.length > 0);
+      setCommentLoading(false);
+      return newComments;
+  };
+
+	const handleLoadMoreCommentsClick = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		await handleLoadMoreComments();
+	}
+
+	const handleLoadMoreComments = async () => {
+		const newPage = commentPage + 1;
+		const oldLength = comments[postId].length;
+		const newComments = await loadComments(newPage);
+		setCommentPage(newPage);
+		setHasMoreComments(newComments ? newComments.length > 0  && oldLength !== newComments.length : false);
+	};
 
   return (
     <div className="border-t border-gray-100 pt-3">
@@ -206,7 +241,7 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
 
       {/* Yorumlar listesi */}
       <div className="px-4 pb-3">
-        {comments.length === 0 ? (
+        {(comments[postId] ?? []).length === 0 ? (
           <div className="text-center py-4 text-gray-500 text-sm">
             Henüz yorum yok. İlk yorumu siz yapın!
           </div>
@@ -296,6 +331,34 @@ const Comments: React.FC<CommentsProps> = ({ postId, comments: initialComments, 
           </div>
         )}
       </div>
+
+      {commentLoading ? (
+						<div className="flex justify-center items-center py-4 border-t border-gray-100">
+							<Icon
+								icon="line-md:loading-loop"
+								width="24"
+								height="24"
+							/>
+						</div>
+					) : (
+						<>
+							{commentExists &&
+                (hasMoreComments ? (
+                  <div className="text-center m-4">
+                    <Button
+                      type="primary"
+                      onClick={handleLoadMoreCommentsClick}
+                    >
+                      Daha Fazla Yükle
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center m-4 text-gray-500">
+                    Yorumların sonuna geldin.
+                  </div>
+                ))}
+						</>
+					)}
     </div>
   );
 };

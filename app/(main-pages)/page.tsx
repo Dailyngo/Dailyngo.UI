@@ -11,17 +11,23 @@ export default function HomePage() {
   const { posts, postError, getHomePosts,setErrorConfirmInfoModal } = useStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [dataStilExist, setDataStilExist] = useState(true);
-  const [oldDataLength, setOldDataLength] = useState(0);
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef(null);
 
   useEffect(() => {
-    setLoading(true);
-    setOldDataLength(posts.length);
-    getHomePosts(currentPage);
-    if (oldDataLength !== 0 && oldDataLength === posts.length)
-      setDataStilExist(false);
-    setLoading(false);
+    const fetchData = async () => {
+      setLoading(true);
+
+      const oldDataLength = posts.length; 
+      await getHomePosts(currentPage); 
+      if (oldDataLength !== 0 && oldDataLength === posts.length) {
+        setDataStilExist(false);
+      }
+  
+      setLoading(false);
+    };
+  
+    fetchData();
   }, [getHomePosts, currentPage]);
 
   // Intersection Observer kurulumu
