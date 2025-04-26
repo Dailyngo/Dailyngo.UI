@@ -12,7 +12,13 @@ function clearAuthCookies(response: NextResponse) {
 		'next-auth.csrf-token'
 	];
 	cookieNames.forEach(name => {
-		response.cookies.set(name, '', { path: '/', maxAge: 0 });
+		response.cookies.set(name, '', { 
+			path: '/', 
+			maxAge: 0,
+			secure: true,      // <<< BU SATIRI EKLEDİK
+			sameSite: 'lax',   // <<< opsiyonel, next-auth genelde lax kullanıyor
+			httpOnly: true     // <<< opsiyonel, güvenlik için
+		});
 	});
 	return response;
 }
@@ -23,7 +29,8 @@ export default withAuth(
 
 		const token = await getToken({ req });
 		const isAuth = !!token;
-		const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register');
+		const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
+		 req.nextUrl.pathname.startsWith('/register');
 
 		if (isAuth) {
 			console.log('[Middleware] User is authenticated. Verifying email status...');
