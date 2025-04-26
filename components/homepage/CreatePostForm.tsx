@@ -11,33 +11,36 @@ import { ERRORS } from '@/store/slices/errorSlice';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const CreatePostForm: React.FC = () => {
-  const { createPost,postError,setErrorConfirmInfoModal,postLoading} = useStore();
+  const { createPost, postError, setErrorConfirmInfoModal, postLoading} = useStore();
   const [content, setContent] = useState<string | null>();
 
-  const handleSubmit = async () => {
-		if (!content) return;
-		await createPost({ content });
-		setContent(null);
-    if(postError !== null){
-			setErrorConfirmInfoModal(
-				ERRORS.GENERIC_INFO_AND_ERRORS,
-				"Hata",
-				"Gönderi Başarılı bir şekilde paylaşıldı.",
-				"success"
-				);
-		}
-  };
+    const handleSubmit = async () => {
+      if (!content) return;
+      const isSuccess = await createPost({ content });
+      setContent(null);
 
-  useEffect(() => {
-    if (postError) {
-      setErrorConfirmInfoModal(
-        ERRORS.GENERIC_INFO_AND_ERRORS,
-        "Hata",
-        postError,
-        "error"
-      );
-    }
-  }, [postError]);
+      if(isSuccess){
+        console.log('postError create after', postError);
+        setErrorConfirmInfoModal(
+          ERRORS.GENERIC_INFO_AND_ERRORS,
+          "Hata",
+          "Gönderi Başarılı bir şekilde paylaşıldı.",
+          "success"
+        );
+      }
+    };
+
+    useEffect(() => {
+      if (postError) {
+        console.log('postError', postError);
+        setErrorConfirmInfoModal(
+          ERRORS.GENERIC_INFO_AND_ERRORS,
+          "Hata",
+          postError,
+          "error"
+        );
+      }
+    }, [postError]);
 
   const modules = {
     toolbar: [

@@ -28,13 +28,13 @@ interface CommentResponseData {
 
 export interface TCommentState {
   comments: { [postId: string]: CommentData[] };
-  loading: boolean;
-  error: string | null;
+  commentLoading: boolean;
+  commentError: string | null;
   
   // Comment Actions
   createComment: (commentData: CreateCommentData) => Promise<void>;
   getPostComments: (postId: string, pageNumber?: number) => Promise<CommentData[]>;
-  deleteComment: (commentId: string, postId: string) => Promise<void>;
+  deleteComment: (commentId: string, postId: string) => Promise<boolean>;
   
   // Utility functions
   resetError: () => void;
@@ -43,18 +43,23 @@ export interface TCommentState {
 const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (set, get) => ({
   // State
   comments: {},
-  loading: false,
-  error: null,
+  commentLoading: false,
+  commentError: null,
   
   // Actions
   createComment: async (commentData: CreateCommentData) => {
     try {
-      // API'ye yorum ekleme isteği gönder
+      set({ commentError: null , commentLoading: true });
       await createCommentService(commentData);
 
-    } catch (error) {
-      console.error('Yorum eklenirken bir hata oluştu:', error);
-      set({ error: 'Yorum eklenirken bir hata oluştu.', loginLoading: false });
+    } catch (error: any) {
+      set({ commentError: error.response.data.messages});
+    }
+    finally {
+      set({ commentLoading: false });
+      setTimeout(() => {
+        set({ commentError: null });
+      }, 3000);
     }
   },
   
@@ -85,7 +90,7 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
   
   deleteComment: async (commentId: string, postId: string) => {
     try {
-      set({ loginLoading: true, error: null });
+      set({ commentError: null });
       
       // API'ye yorum silme isteği gönder
       await deleteCommentService(commentId);
@@ -103,12 +108,16 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
         comments: {
           ...get().comments,
           [postId]: updatedComments
-        },
-        loginLoading: false
+        }
       });
-    } catch (error) {
-      console.error('Yorum silinirken bir hata oluştu:', error);
-      set({ error: 'Yorum silinirken bir hata oluştu.', loginLoading: false });
+
+      return true;
+    } catch (error : any) {
+      set({ commentError: error.response.data.messages });
+      setTimeout(() => {
+        set({ commentError: null });
+      }, 3000);
+      return false;
     }
   },
   

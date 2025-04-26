@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useStore } from '../../../../store';
 import { useRouter } from 'next/navigation';
 import Comments from '../../../../components/homepage/comments';
-import { Avatar, Button } from 'antd';
+import { Avatar, Button, Dropdown, Modal } from 'antd';
 import { Icon } from '@iconify/react';
 import { PostData } from '@/store/slices/postSlice';
 import { ERRORS } from '@/store/slices/errorSlice';
@@ -14,15 +14,15 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
   const [liked, setLiked] = useState(selectedPost?.isLiked);
   const [likeCount, setLikeCount] = useState(selectedPost?.likeCount);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+
   const { 
 	getPostDetailService,
-    getPostComments, 
+    deletePost,
 	postError,
-    deleteComment,
     addLike,
     removeLike,
-	setErrorConfirmInfoModal,
-    comments
+	setErrorConfirmInfoModal
   } = useStore();
 
 	useEffect(() => {
@@ -65,18 +65,6 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 		}
 	};
 
-	const handleDeleteComment = async (commentId: string) => {
-			try {
-				if (!selectedPost) return;
-
-				const postId = params.id;
-
-				await deleteComment(commentId, postId);
-			} catch (error) {
-				console.error("Yorum silinirken bir hata oluştu:", error);
-			}
-	};
-
 	// Tarih formatını düzenleme
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
@@ -92,6 +80,38 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 	if (!selectedPost) {
 		return null;
 	}
+	
+	const handleUserClick = () => {
+		router.push(`/users/${selectedPost.userId}`);
+	};
+
+	const dropdownItems = [
+		...(selectedPost.isOwner ? [
+			{ key: '2', label: 'Sil' },
+			{ key: '3', label: 'Düzenle' }
+		] : [{ key: '1', label: 'Rapor Et' }])
+	];
+
+	const handleMenuClick = ({ key }: { key: string }) => {
+		if (key === '2') {
+			setIsDeleteModalVisible(true);
+		} else if (key === '3') {
+			// Handle edit logic here
+		}
+	};
+
+	const handleDeletePost = async () => {
+		const isSuccess = await deletePost(selectedPost.id);
+		setIsDeleteModalVisible(false);
+		if(isSuccess){
+			setErrorConfirmInfoModal(
+				ERRORS.GENERIC_INFO_AND_ERRORS,
+				"Hata",
+				"Gönderi başarıyla silindi.",
+				"success"
+				);
+		}
+	};
 
   return (
 		<main className="py-6 px-4 bg-gray-100 min-h-screen">
@@ -103,6 +123,8 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 							<Avatar
 								src={selectedPost.userProfileImage || undefined}
 								size={40}
+								onClick={handleUserClick}
+								className="cursor-pointer"
 							>
 								{!selectedPost.userProfileImage &&
 									selectedPost.userName
@@ -110,14 +132,31 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 										.toUpperCase()}
 							</Avatar>
 							<div>
-								<div className="font-medium text-gray-800">
-									{selectedPost.userName}
+								<div
+									className="font-medium text-gray-800"
+									onClick={handleUserClick}
+								>
+									<span className="cursor-pointer hover:underline font-bold">
+										@{selectedPost.userName}
+									</span>
 								</div>
 								<div className="text-xs text-gray-500">
 									{formatDate(selectedPost.postDate)}
 								</div>
 							</div>
 						</div>
+						<Dropdown
+							menu={{
+								items: dropdownItems,
+								onClick: handleMenuClick,
+							}}
+							placement="bottomRight"
+							trigger={["click"]}
+						>
+							<Button type="text" onClick={(e) => e.stopPropagation()}>
+								<Icon icon="mdi:dots-vertical" />
+							</Button>
+						</Dropdown>
 					</div>
 
 					{/* Post content */}
@@ -169,11 +208,27 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					{selectedPost && (
 						<Comments
 							postId={params.id}
-							onDeleteComment={handleDeleteComment}
 						/>
 					)}
 				</div>
 			</div>
+			{/* Silme Onay Modalı */}
+			<Modal
+				title="Gönderiyi Sil"
+				open={isDeleteModalVisible}
+				onOk={handleDeletePost}
+				onCancel={(e) => {
+					e.stopPropagation();
+					setIsDeleteModalVisible(false);
+				}}
+				okText="Sil"
+				cancelText="İptal"
+			>
+				<p>
+					Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem
+					geri alınamaz.
+				</p>
+			</Modal>
 		</main>
   );
 } 

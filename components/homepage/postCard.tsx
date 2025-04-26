@@ -68,9 +68,9 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   };
 
 	const handleDeletePost = async () => {
-		await deletePost(post.id);
+		const isSuccess = await deletePost(post.id);
 		setIsDeleteModalVisible(false);
-		if(!postError){
+		if(isSuccess){
 			setErrorConfirmInfoModal(
 				ERRORS.GENERIC_INFO_AND_ERRORS,
 				"Hata",
