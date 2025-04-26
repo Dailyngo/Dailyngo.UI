@@ -19,7 +19,7 @@ export default {
 	getHomePagePosts: (data: any) => `/api/Posts/homepage?${qs.stringify(data, { skipNulls: true })}`,
 	getUserPosts: (data: any) => `/api/Posts?${qs.stringify(data, { skipNulls: true })}`,
 	deletePost: (id: string) => `/api/Posts/${id}`,
-	getPostById: (data: any) => `/api/Posts/byId?${qs.stringify(data, { skipNulls: true })}`,
+	getPostById: (id: string) =>  `/api/Posts/${id}`,
 
 	/** Comment */
 	createComment: () => '/api/Comments',
