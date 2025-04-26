@@ -5,9 +5,10 @@ import PostCard from '../../components/homepage/postCard';
 import CreatePostForm from '../../components/homepage/CreatePostForm';
 import { useStore } from '../../store';
 import { Icon } from '@iconify/react';
+import { ERRORS } from '@/store/slices/errorSlice';
 
 export default function HomePage() {
-  const { posts, error, getHomePosts } = useStore();
+  const { posts, postError, getHomePosts,setErrorConfirmInfoModal } = useStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [dataStilExist, setDataStilExist] = useState(true);
   const [oldDataLength, setOldDataLength] = useState(0);
@@ -49,20 +50,25 @@ export default function HomePage() {
     };
   }, [handleObserver]);
 
+  useEffect(() => {
+    if (postError) {
+      setErrorConfirmInfoModal(
+        ERRORS.GENERIC_INFO_AND_ERRORS,
+        "Hata",
+        postError,
+        "error"
+      );
+    }
+  }, [postError]);
+
   return (
     <main className="py-6 px-4 min-h-screen">
       <div className="w-full max-w-3xl mx-auto md:w-2/3 lg:w-1/2">
 	  
         {/* Gönderi oluşturma formu */}
         <CreatePostForm />
-
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
         
-        {!loading && !error && posts.length === 0 ? (
+        {!loading && posts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             Henüz hiç gönderi yok.
           </div>
