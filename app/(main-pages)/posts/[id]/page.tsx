@@ -29,17 +29,17 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 	likes
   } = useStore();
 
+	const fetchPostDetail = async () => {
+		const postDetail = await getPostDetailService(params.id);
+		setSelectedPost(postDetail);
+		if (!postDetail) {
+			router.push('/');
+			return;
+		}
+		setLiked(postDetail.isLiked);
+		setLikeCount(postDetail.likeCount);
+	};
 	useEffect(() => {
-		const fetchPostDetail = async () => {
-			const postDetail = await getPostDetailService(params.id);
-			setSelectedPost(postDetail);
-			if (!postDetail) {
-				router.push('/');
-				return;
-			}
-			setLiked(postDetail.isLiked);
-			setLikeCount(postDetail.likeCount);
-		};
 		fetchPostDetail();
 	}, [params.id]);
 
@@ -130,6 +130,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 				"success"
 				);
 		}
+		router.push('/');
 	};
 
   return (
@@ -230,6 +231,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					{selectedPost && (
 						<Comments
 							postId={params.id}
+							handleSelectedPostDetail={fetchPostDetail}
 						/>
 					)}
 				</div>
