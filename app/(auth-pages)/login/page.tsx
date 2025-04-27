@@ -56,7 +56,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                E-posta
+                E-posta veya Kullanıcı Adı
               </label>
               <input
                 id="email"

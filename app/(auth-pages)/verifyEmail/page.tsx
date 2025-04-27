@@ -6,6 +6,7 @@ import { ERRORS } from "@/store/slices/errorSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react"; 
 import React, { useEffect, useState } from "react";
 import CountdownButton from "./countdown";
 
@@ -115,7 +116,7 @@ const VerifyEmail = () => {
           <h2 className="text-3xl font-bold text-gray-800">Email Doğrulama</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-4">
             <div>
               <input
@@ -146,6 +147,14 @@ const VerifyEmail = () => {
               "Doğrula"
             )}
           </button>
+        
+        <button
+        type= "button"
+          onClick={() => signOut()}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700"
+        >
+         İptal Et
+        </button>
         </form>
       </div>
     </div>

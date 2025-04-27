@@ -23,6 +23,7 @@ export interface UserProfileData {
 	profilePicture: string | null;
 	fullName: string;
 	userName: string;
+	userId: string;
   };
   follower: number;
   following: number;
