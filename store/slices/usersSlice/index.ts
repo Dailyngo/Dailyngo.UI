@@ -23,6 +23,7 @@ export interface UserProfileData {
 	profilePicture: string | null;
 	fullName: string;
 	userName: string;
+	userId: string;  // userId burada tanımlanmalı
   };
   follower: number;
   following: number;

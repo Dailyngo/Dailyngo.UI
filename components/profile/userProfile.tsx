@@ -86,6 +86,7 @@ const UserProfile = ({ userId }: UserProfileProps) => {
 						isEditing={isEditing}
 						onBioToggle={() => setIsBioOpen(!isBioOpen)}
 						onEditToggle={() => setIsEditing(!isEditing)}
+						isOwnProfile={!userId} // Pass whether it's the user's own profile
 					/>
 				);
 			case "posts":
@@ -267,13 +268,15 @@ const AboutContent = ({
   isBioOpen,
   isEditing,
   onBioToggle,
-  onEditToggle
+  onEditToggle,
+  isOwnProfile // Add a new prop to determine if it's the user's own profile
 }: {
   about: AboutData | null;
   isBioOpen: boolean;
   isEditing: boolean;
   onBioToggle: () => void;
   onEditToggle: () => void;
+  isOwnProfile: boolean; // New prop
 }) => {
   const genderOptions = [
     { value: 0, label: "Belirtilmemiş" },
@@ -300,16 +303,18 @@ const AboutContent = ({
       {isBioOpen && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="col-span-3 bg-white p-3 rounded-lg space-y-4">
-            <div className="flex justify-end gap-2">
-              <Button
-                type="primary"
-                className="bg-gray-800 hover:bg-gray-900 border-none text-white"
-                onClick={onEditToggle}
-                icon={<Icon icon={isEditing ? "mdi:content-save" : "mdi:pencil"} />}
-              >
-                {isEditing ? "Kaydet" : "Düzenle"}
-              </Button>
-            </div>
+            {isOwnProfile && ( // Conditionally render buttons for own profile
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="primary"
+                  className="bg-gray-800 hover:bg-gray-900 border-none text-white"
+                  onClick={onEditToggle}
+                  icon={<Icon icon={isEditing ? "mdi:content-save" : "mdi:pencil"} />}
+                >
+                  {isEditing ? "Kaydet" : "Düzenle"}
+                </Button>
+              </div>
+            )}
 
             <TextArea
               className="w-full p-2 rounded-lg"
