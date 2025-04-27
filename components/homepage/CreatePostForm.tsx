@@ -23,7 +23,7 @@ const CreatePostForm: React.FC = () => {
         console.log('postError create after', postError);
         setErrorConfirmInfoModal(
           ERRORS.GENERIC_INFO_AND_ERRORS,
-          "Hata",
+          "Başarılı",
           "Gönderi Başarılı bir şekilde paylaşıldı.",
           "success"
         );

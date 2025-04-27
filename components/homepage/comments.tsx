@@ -120,7 +120,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
     if(isSuccess){
       setErrorConfirmInfoModal(
         ERRORS.GENERIC_INFO_AND_ERRORS,
-        "Hata",
+        "Başarılı",
         "Yorum Başarılı bir şekilde silindi.",
         "success"
       );
@@ -169,7 +169,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
           ERRORS.GENERIC_INFO_AND_ERRORS,
           "Hata",
           commentError,
-          "success"
+          "error"
           );
     }
   }, [commentError]);

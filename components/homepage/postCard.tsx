@@ -73,7 +73,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
 		if(isSuccess){
 			setErrorConfirmInfoModal(
 				ERRORS.GENERIC_INFO_AND_ERRORS,
-				"Hata",
+				"Başarılı",
 				"Gönderi başarıyla silindi.",
 				"success"
 				);

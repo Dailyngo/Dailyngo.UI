@@ -76,9 +76,10 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
       
       await createPostService(postData);
 
+      set({ postLoading: false });
       return true;
     } catch (error : any) {
-      set({ postError: error.response.data.messages, postLoading: false });
+      set({ postError: error.response.data.messages });
 
       setTimeout(() => {
         set({ postError: null });
@@ -150,7 +151,8 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
 
       set({ 
         posts: updatedPosts, 
-        userPosts: updatedUserPosts
+        userPosts: updatedUserPosts,
+        postLoading: false
       });
       return true;
     } catch (error : any) {
