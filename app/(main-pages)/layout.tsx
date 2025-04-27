@@ -25,20 +25,22 @@ export default function RootLayout({
 
     signalRHelper.startConnection();
 
-    signalRHelper.on("ReceiveNotification", (message: any) => {
+    signalRHelper.on("ReceiveNotification",async (message: any) => {
       setNotificationCount(message);
     });
-
-    // Cleanup bağlantıyı durdur
     return () => {
       signalRHelper.stopConnection();
     };
   }, []);
 
   useEffect(() => {
-    if(pathname === "/notifications") {
-      getAllNotifications();
+    const fetchNotifications = async () => {
+      if(pathname === "/notifications") {
+        await getAllNotifications();
+      };
     };
+
+    fetchNotifications();
   }, [notificationCount]);
 
   return (
