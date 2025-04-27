@@ -65,19 +65,21 @@ const createCommentSlice: StateCreator<TStoreState, [], [], TCommentState> = (se
   
   getPostComments: async (postId: string,pageNumber?: number ) => {
     try {
-      const existingComments = get().comments[postId];
-      if (existingComments && existingComments.length > 0 && (pageNumber === undefined || pageNumber === 1)) {
-        return existingComments;
-      }
       
       // API'den yorumları getir
       const response = await getPostCommentsService<CommentResponseData, { postId: string,queryParams : { pageNumber?: number} }>(
         { postId , queryParams: { pageNumber:  pageNumber }}
       );
       
+      if ((pageNumber === undefined || pageNumber === 1)) {
+        set({ comments: { ...get().comments, [postId]: [...response.data.data] } });
+
+        return response.data.data;
+      }
+
       set({ comments: {
         ...get().comments,
-        [postId]: [...get().comments[postId]??[], ...response.data.data]
+        [postId]: [...get().comments[postId] ?? [], ...response.data.data]
       } });
       
       return response.data.data;

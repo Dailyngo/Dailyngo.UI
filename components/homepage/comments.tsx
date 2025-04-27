@@ -23,9 +23,10 @@ interface CommentData {
 
 interface CommentsProps {
   postId: string;
+  handleSelectedPostDetail:() => Promise<void>;
 }
 
-const Comments: React.FC<CommentsProps> = ({ postId}) => {
+const Comments: React.FC<CommentsProps> = ({ postId,handleSelectedPostDetail}) => {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyToUserName, setReplyToUserName] = useState<string | null>(null);
@@ -108,7 +109,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
       setNewComment('');
       setReplyTo(null);
       setReplyToUserName(null);
-      await getPostComments(postId, 1);
+      await loadComments(1);
     } catch (error) {
       console.error('Yorum gönderilirken bir hata oluştu:', error);
     }
@@ -116,15 +117,16 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 
  
   const handleDeleteComment = async (commentId: string) => {
-		const isSuccess = await deleteComment(commentId, postId);
+	const isSuccess = await deleteComment(commentId, postId);
     if(isSuccess){
       setErrorConfirmInfoModal(
         ERRORS.GENERIC_INFO_AND_ERRORS,
-        "Hata",
+        "Başarılı",
         "Yorum Başarılı bir şekilde silindi.",
         "success"
       );
     }
+	await loadComments(1);
   };
 
   const handleReply = async () => {
@@ -139,6 +141,7 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
       console.error('Yanıt eklenirken bir hata oluştu:', error);
     } finally {
       setSubmitting(false);
+	  await loadComments(1);
     }
   };
 
@@ -169,16 +172,15 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
           ERRORS.GENERIC_INFO_AND_ERRORS,
           "Hata",
           commentError,
-          "success"
+          "error"
           );
     }
   }, [commentError]);
 
   const loadComments = async (pageNumber: number | null) => {
-      setMoreCommentLoading(true);
       const newComments = await getPostComments(postId,pageNumber || 1);
+	  await handleSelectedPostDetail();
       setHasMoreComments(newComments.length > 0);
-      setMoreCommentLoading(false);
       return newComments;
   };
 
@@ -190,7 +192,9 @@ const Comments: React.FC<CommentsProps> = ({ postId}) => {
 	const handleLoadMoreComments = async () => {
 		const newPage = commentPage + 1;
 		const oldLength = comments[postId].length;
+		setMoreCommentLoading(true);
 		const newComments = await loadComments(newPage);
+		setMoreCommentLoading(false);
 		setCommentPage(newPage);
 		setHasMoreComments(newComments ? newComments.length > 0  && oldLength !== newComments.length : false);
 	};

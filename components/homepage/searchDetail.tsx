@@ -25,7 +25,7 @@ const SearchDetailPage = () => {
 
         const timeout = setTimeout(() => {
             handleSearch(value);
-        }, 1000); // 1 saniye bekleme süresi
+        }, 500); // 1 saniye bekleme süresi
 
         setDebounceTimeout(timeout);
     };
