@@ -9,6 +9,7 @@ import { Icon } from '@iconify/react';
 import { PostData } from '@/store/slices/postSlice';
 import { ERRORS } from '@/store/slices/errorSlice';
 import LikesModal from '../../../../components/ui/LikesModal';
+import { getTokenInfos } from '@/utils/helpers';
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -101,6 +102,11 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 	}
 	
 	const handleUserClick = () => {
+		if(selectedPost.isOwner) {
+			const router = useRouter();
+			router.push("/profile");
+			return;
+		}
 		router.push(`/users/${selectedPost.userId}`);
 	};
 

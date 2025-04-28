@@ -108,6 +108,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   };
 
   const handleUserClick = () => {
+	if(post.isOwner) {
+		router.push("/profile");
+		return;
+	}
 	router.push(`/users/${post.userId}`);
   };
 
