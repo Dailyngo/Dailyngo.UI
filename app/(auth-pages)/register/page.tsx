@@ -27,6 +27,27 @@ export default function RegisterPage() {
     try {
       const response: AxiosResponse = await registerService(formData);
       console.log("Kayıt başarılı:", response.data);
+      setErrorConfirmInfoModal(
+        ERRORS.GENERIC_INFO_AND_ERRORS,
+        "Kayıt başarılı!",
+        "Başarılı",
+        "success",
+        () => router.push("/login")
+      );
+
+      setFormData({
+        name: "",
+        surname: "",
+        userName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+
     } catch (error: any) {
       setErrorConfirmInfoModal(
         ERRORS.GENERIC_INFO_AND_ERRORS,
