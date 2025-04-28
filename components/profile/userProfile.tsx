@@ -2,12 +2,13 @@
 import React, { use, useEffect, useState } from "react";
 import moment from "moment";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { Avatar, Button, DatePicker, Input, Select, Menu } from "antd";
+import { Avatar, Button, DatePicker, Input, Select, Menu, Card} from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import { useStore } from "@/store";
 import PostCard from "../homepage/postCard";
 import { UserProfileData } from "@/store/slices/usersSlice";
 import { ERRORS } from "@/store/slices/errorSlice";
+import { Link } from "react-router-dom";
 
 interface UserProfileProps {
   userId?: string | null;
@@ -24,101 +25,218 @@ interface AboutData {
   birthDate?: string | null | undefined;
 }
 
+interface Friend {
+	id: number;
+	fullName: string;
+	userName: string;
+	profilePicture: string;
+  }
+
 const UserProfile = ({ userId }: UserProfileProps) => {
-	const [activeTab, setActiveTab] = useState("posts");
-	const [isBioOpen, setIsBioOpen] = useState(false);
-	const [isEditing, setIsEditing] = useState(false);
-	const [userProfileData, setUserProfileData] =
-		useState<UserProfileData | null>(null);
-	const {
-		userPosts,
-		getUserPosts,
-		about,
-		getOwnAbout,
-		getUserProfileCard,
-		answerFollowRequest,
+  const [activeTab, setActiveTab] = useState("posts");
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [visibleFriends, setVisibleFriends] = useState<Friend[]>([]); // Görünen arkadaşlar
+  const [isBioOpen, setIsBioOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [userProfileData, setUserProfileData] =
+    useState<UserProfileData | null>(null);
+  const {
+    userPosts,
+    getUserPosts,
+    about,
+    getOwnAbout,
+    getUserProfileCard,
+    answerFollowRequest,
     createFollowRequest,
-		followErrors,
-		setErrorConfirmInfoModal,
-	} = useStore();
+    followErrors,
+    setErrorConfirmInfoModal,
+  } = useStore();
 
-	// Tab menü öğeleri
-	const tabItems = [
-		{ key: "posts", label: "Gönderiler" },
-		{ key: "about", label: "Hakkında" },
-		{ key: "friends", label: "Arkadaşlar" },
-		{ key: "badges", label: "Rozetler" },
-	];
+  // Tab menü öğeleri
+  const tabItems = [
+    { key: "posts", label: "Gönderiler" },
+    { key: "about", label: "Hakkında" },
+    { key: "friends", label: "Arkadaşlar" },
+    { key: "badges", label: "Rozetler" },
+  ];
 
-	useEffect(() => {
-		if (!about) getOwnAbout();
-	}, [about, getOwnAbout]);
+  useEffect(() => {
+    if (!about) getOwnAbout();
+  }, [about, getOwnAbout]);
 
-	useEffect(() => {
-		if (activeTab == "posts") {
-			if (userPosts) {
-				getUserPosts(userId);
-			}
-		}
-	}, [activeTab]);
+  useEffect(() => {
+    if (activeTab == "posts") {
+      if (userPosts) {
+        getUserPosts(userId);
+      }
+    }
+  }, [activeTab]);
 
-	const getUserProfileCardData = async () => {
-		try {
-			console.log("userId", userId);
-			const data = await getUserProfileCard(userId);
-			setUserProfileData(data);
-		} catch (error) {
-			console.error("Kullanıcı profil verileri alınamadı:", error);
-		}
-	};
+  const getUserProfileCardData = async () => {
+    try {
+      console.log("userId", userId);
+      const data = await getUserProfileCard(userId);
+      setUserProfileData(data);
+    } catch (error) {
+      console.error("Kullanıcı profil verileri alınamadı:", error);
+    }
+  };
 
-	useEffect(() => {
-		getUserProfileCardData();
-	}, []);
+  useEffect(() => {
+    getUserProfileCardData();
+  }, []);
 
-	const renderContent = () => {
-		switch (activeTab) {
-			case "about":
-				return (
-					<AboutContent
-						about={about}
-						isBioOpen={isBioOpen}
-						isEditing={isEditing}
-						onBioToggle={() => setIsBioOpen(!isBioOpen)}
-						onEditToggle={() => setIsEditing(!isEditing)}
-					/>
-				);
-			case "posts":
-				return (
-					userPosts &&
-					userPosts.map((post) => (
-						<PostCard key={post.id} post={post} />
-					))
-				);
-			default:
-				return null;
-		}
-	};
+  useEffect(() => {
+    // Statik arkadaşlar verisini buraya ekliyoruz
+    const staticFriends = [
+      { id: 1, fullName: "Ali Yılmaz", userName: "ali123", profilePicture: "https://example.com/ali.jpg" },
+      { id: 2, fullName: "Ayşe Demir", userName: "ayse45", profilePicture: "https://example.com/ayse.jpg" },
+      { id: 3, fullName: "Mehmet Can", userName: "mehmet89", profilePicture: "https://example.com/mehmet.jpg" },
+      { id: 4, fullName: "Fatma Kaya", userName: "fatma_kaya", profilePicture: "https://example.com/fatma.jpg" },
+      { id: 5, fullName: "Ahmet Çelik", userName: "ahmetc", profilePicture: "https://example.com/ahmet.jpg" },
+      { id: 6, fullName: "Zeynep Arslan", userName: "zeynep_arslan", profilePicture: "https://example.com/zeynep.jpg" },
+      { id: 7, fullName: "Emre Koç", userName: "emreko", profilePicture: "https://example.com/emre.jpg" },
+      { id: 8, fullName: "Elif Aydın", userName: "elifay", profilePicture: "https://example.com/elif.jpg" },
+      { id: 9, fullName: "Burak Yıldız", userName: "buraky", profilePicture: "https://example.com/burak.jpg" },
+      { id: 10, fullName: "Seda Polat", userName: "sedap", profilePicture: "https://example.com/seda.jpg" },
+      { id: 11, fullName: "Canan Tekin", userName: "canantekin", profilePicture: "https://example.com/canan.jpg" },
+    ];
+    setFriends(staticFriends);
+    setVisibleFriends(staticFriends.slice(0, 9)); // İlk 9 arkadaş gösteriliyor
+  }, []);
 
-	const followRequestHandler = async (isAccept: boolean) => {
-		const receiverId = userProfileData?.sendReceiverRequestId;
-		if (!receiverId) return;
-		await answerFollowRequest(receiverId, isAccept);
+  const loadMoreFriends = () => {
+    const nextFriends = friends.slice(visibleFriends.length, visibleFriends.length + 9);
+    setVisibleFriends([...visibleFriends, ...nextFriends]);
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "about":
+        return (
+          <AboutContent
+            about={about}
+            isBioOpen={isBioOpen}
+            isEditing={isEditing}
+            onBioToggle={() => setIsBioOpen(!isBioOpen)}
+            onEditToggle={() => setIsEditing(!isEditing)}
+          />
+        );
+      case "posts":
+        return (
+          userPosts &&
+          userPosts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))
+        );
+      case "friends":
+        return (
+          <div className="mt-4">
+            {visibleFriends.length > 0 ? (
+              <>
+                {visibleFriends.map((friend) => (
+                  <div
+                    key={friend.id}
+                    className="flex items-center justify-between mb-3 p-2 border rounded-lg shadow-md cursor-pointer hover:bg-gray-100 transition"
+                  >
+                    {/* Profil Resmi ve Bilgiler */}
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => {
+                        console.log(`Tıklanan arkadaş: ${friend.fullName}`);
+                        window.location.href = `/profile/${friend.userName}`;
+                      }}
+                    >
+                      <Avatar
+                        size={48} // Profil resmini küçültmek için boyut azaltıldı
+                        src={friend.profilePicture}
+                        className="mr-3"
+                        style={{ borderRadius: "50%" }}
+                      />
+                      <div>
+                        <h3 className="text-lg font-medium">{friend.fullName}</h3>
+                        <p className="text-gray-500 text-sm">@{friend.userName}</p>
+                      </div>
+                    </div>
+
+                    {/* Sil Butonu */}
+                    <Button
+                      type="primary"
+                      danger // Kırmızı renk için
+                      className="ml-3"
+                      onClick={() => {
+                        // Arkadaşı silme işlemi
+                        setFriends((prevFriends) =>
+                          prevFriends.filter((f) => f.id !== friend.id)
+                        );
+
+                        setVisibleFriends((prevVisibleFriends) => {
+                          const updatedVisibleFriends = prevVisibleFriends.filter(
+                            (f) => f.id !== friend.id
+                          );
+
+                          // Görünmeyen arkadaşlardan birini ekle
+                          const nextFriend = friends.find(
+                            (f) =>
+                              !updatedVisibleFriends.some((vf) => vf.id === f.id) &&
+                              !prevVisibleFriends.some((vf) => vf.id === f.id)
+                          );
+
+                          if (nextFriend) {
+                            return [...updatedVisibleFriends, nextFriend];
+                          }
+
+                          return updatedVisibleFriends;
+                        });
+
+                        console.log(`Silinen arkadaş: ${friend.fullName}`);
+                      }}
+                    >
+                      Takipten Çık
+                    </Button>
+                  </div>
+                ))}
+                {visibleFriends.length < friends.length && (
+                  <div className="text-center m-4">
+                    <Button
+                      type="primary"
+                      className="bg-black hover:bg-gray-800 text-white"
+                      onClick={loadMoreFriends}
+                    >
+                      Daha Fazla Yükle
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-gray-500">Henüz arkadaşınız yok.</div>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const followRequestHandler = async (isAccept: boolean) => {
+    const receiverId = userProfileData?.sendReceiverRequestId;
+    if (!receiverId) return;
+    await answerFollowRequest(receiverId, isAccept);
     if(!followErrors){
       await getUserProfileCardData();
     }
-	};
+  };
 
-	useEffect(() => {
-		if (followErrors) {
-			setErrorConfirmInfoModal(
-				ERRORS.GENERIC_INFO_AND_ERRORS,
-				"Hata",
-				followErrors,
-				"error"
-			);
-		}
-	}, [followErrors]);
+  useEffect(() => {
+    if (followErrors) {
+      setErrorConfirmInfoModal(
+        ERRORS.GENERIC_INFO_AND_ERRORS,
+        "Hata",
+        followErrors,
+        "error"
+      );
+    }
+  }, [followErrors]);
 
   const createFollowRequestHandler = async () => {
     if (!userId) return;
@@ -129,137 +247,137 @@ const UserProfile = ({ userId }: UserProfileProps) => {
   }
 
 
-	return (
-		<div className="flex-1 max-w-3xl mx-auto bg-white p-6 mt-6 rounded-xl shadow-sm">
-			{userId && userProfileData?.isReceiverFollowRequest && (
-				<div className="bg-gray-200 p-2 rounded-lg shadow-md flex items-center justify-around mb-4">
-					<span className="font-semibold text-gray-700">
-						Takip İsteği
-					</span>
-					<div className="flex gap-2">
-						<Button
-							type="primary"
-							className="bg-black hover:bg-gray-800 border-none text-white"
-							onClick={async () => {
-								await followRequestHandler(true);
-							}}
-						>
-							Onayla
-						</Button>
-						<Button
-							type="default"
-							className="bg-white hover:bg-gray-100 border border-gray-300 text-black"
-							onClick={async () => {
-								await followRequestHandler(false);
-							}}
-						>
-							Reddet
-						</Button>
-					</div>
-				</div>
-			)}
-			{/* Profile Header Card */}
-			<div className="bg-gray-50 p-6 rounded-xl mb-6">
-				<div className="flex flex-col md:flex-row items-center gap-6">
-					{/* Profile Picture */}
-					{userProfileData?.getUserResponse?.profilePicture ? (
-						<Avatar
-							size={120}
-							src={
-								userProfileData?.getUserResponse?.profilePicture
-							}
-							icon={<Icon icon="ant-design:user-outlined" />}
-							className="bg-gray-800 shadow-lg"
-						/>
-					) : (
-						<Avatar
-							size={120}
-							icon={<Icon icon="ant-design:user-outlined" />}
-							className="bg-gray-800 shadow-lg"
-						/>
-					)}
-					<div className="flex-1 text-center md:text-left">
-						<h2 className="text-2xl font-bold text-gray-800 mb-2">
-							{userProfileData?.getUserResponse?.fullName ??
-								"name"}
-						</h2>
-						<p className="text-gray-600 mb-4">
-							@
-							{userProfileData?.getUserResponse?.userName ??
-								"username"}
-						</p>
-						<div className="flex justify-center md:justify-start gap-6">
-							<div className="text-center">
-								<span className="block text-xl font-semibold text-gray-800">
-									{userProfileData?.postCount ?? 0}
-								</span>
-								<span className="text-gray-500">Gönderi</span>
-							</div>
-							<div className="text-center">
-								<span className="block text-xl font-semibold text-gray-800">
-									{userProfileData?.following ?? 0}
-								</span>
-								<span className="text-gray-500">Takip</span>
-							</div>
-							<div className="text-center">
-								<span className="block text-xl font-semibold text-gray-800">
-									{userProfileData?.follower ?? 0}
-								</span>
-								<span className="text-gray-500">Takipçi</span>
-							</div>
-						</div>
-					</div>
-					{userId && (
-						<div className="flex justify-center md:justify-start mt-4">
-							{userProfileData?.isSendFollowRequest ? (
-								<Input
-									value="İstek Gönderildi"
-									disabled
-									className="bg-gray-200 text-gray-700 cursor-not-allowed text-center"
-								/>
-							) : (
-								!userProfileData?.isFollowing && (
-									<Button
-										type="primary"
+  return (
+    <div className="flex-1 max-w-3xl mx-auto bg-white p-6 mt-6 rounded-xl shadow-sm">
+      {userId && userProfileData?.isReceiverFollowRequest && (
+        <div className="bg-gray-200 p-2 rounded-lg shadow-md flex items-center justify-around mb-4">
+          <span className="font-semibold text-gray-700">
+            Takip İsteği
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="primary"
+              className="bg-black hover:bg-gray-800 border-none text-white"
+              onClick={async () => {
+                await followRequestHandler(true);
+              }}
+            >
+              Onayla
+            </Button>
+            <Button
+              type="default"
+              className="bg-white hover:bg-gray-100 border border-gray-300 text-black"
+              onClick={async () => {
+                await followRequestHandler(false);
+              }}
+            >
+              Reddet
+            </Button>
+          </div>
+        </div>
+      )}
+      {/* Profile Header Card */}
+      <div className="bg-gray-50 p-6 rounded-xl mb-6">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          {/* Profile Picture */}
+          {userProfileData?.getUserResponse?.profilePicture ? (
+            <Avatar
+              size={120}
+              src={
+                userProfileData?.getUserResponse?.profilePicture
+              }
+              icon={<Icon icon="ant-design:user-outlined" />}
+              className="bg-gray-800 shadow-lg"
+            />
+          ) : (
+            <Avatar
+              size={120}
+              icon={<Icon icon="ant-design:user-outlined" />}
+              className="bg-gray-800 shadow-lg"
+            />
+          )}
+          <div className="flex-1 text-center md:text-left">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              {userProfileData?.getUserResponse?.fullName ??
+                "name"}
+            </h2>
+            <p className="text-gray-600 mb-4">
+              @
+              {userProfileData?.getUserResponse?.userName ??
+                "username"}
+            </p>
+            <div className="flex justify-center md:justify-start gap-6">
+              <div className="text-center">
+                <span className="block text-xl font-semibold text-gray-800">
+                  {userProfileData?.postCount ?? 0}
+                </span>
+                <span className="text-gray-500">Gönderi</span>
+              </div>
+              <div className="text-center">
+                <span className="block text-xl font-semibold text-gray-800">
+                  {userProfileData?.following ?? 0}
+                </span>
+                <span className="text-gray-500">Takip</span>
+              </div>
+              <div className="text-center">
+                <span className="block text-xl font-semibold text-gray-800">
+                  {userProfileData?.follower ?? 0}
+                </span>
+                <span className="text-gray-500">Takipçi</span>
+              </div>
+            </div>
+          </div>
+          {userId && (
+            <div className="flex justify-center md:justify-start mt-4">
+              {userProfileData?.isSendFollowRequest ? (
+                <Input
+                  value="İstek Gönderildi"
+                  disabled
+                  className="bg-gray-200 text-gray-700 cursor-not-allowed text-center"
+                />
+              ) : (
+                !userProfileData?.isFollowing && (
+                  <Button
+                    type="primary"
                     onClick={async () => {
                       await createFollowRequestHandler();
                     }}
-										className="bg-black hover:bg-gray-800 border-none text-white"
-									>
-										Takip Et
-									</Button>
-								)
-							)}
-						</div>
-					)}
-				</div>
-				<div className="mt-4 text-center md:text-left">
-					<p className="text-gray-700">{userProfileData?.bio}</p>
-				</div>
-			</div>
+                    className="bg-black hover:bg-gray-800 border-none text-white"
+                  >
+                    Takip Et
+                  </Button>
+                )
+              )}
+            </div>
+          )}
+        </div>
+        <div className="mt-4 text-center md:text-left">
+          <p className="text-gray-700">{userProfileData?.bio}</p>
+        </div>
+      </div>
 
-			{/* Tabs */}
-			<div className="flex justify-center mb-6">
-				<Menu
-					mode="horizontal"
-					selectedKeys={[activeTab]}
-					onSelect={({ key }) => setActiveTab(key as string)}
-					items={tabItems}
-					className="border-b-0 text-lg w-full max-w-2xl"
-					style={{
-						borderBottom: "none",
-						fontSize: "1.125rem",
-						fontWeight: "500",
-						display: "flex",
-						justifyContent: "center",
-						gap: "1rem",
-					}}
-				/>
-			</div>
+      {/* Tabs */}
+      <div className="flex justify-center mb-6">
+        <Menu
+          mode="horizontal"
+          selectedKeys={[activeTab]}
+          onSelect={({ key }) => setActiveTab(key as string)}
+          items={tabItems}
+          className="border-b-0 text-lg w-full max-w-2xl"
+          style={{
+            borderBottom: "none",
+            fontSize: "1.125rem",
+            fontWeight: "500",
+            display: "flex",
+            justifyContent: "center",
+            gap: "1rem",
+          }}
+        />
+      </div>
 
-			<div className="p-4">{renderContent()}</div>
-		</div>
-	);
+      <div className="p-4">{renderContent()}</div>
+    </div>
+  );
 };
 
 const AboutContent = ({ 
