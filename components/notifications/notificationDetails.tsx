@@ -36,7 +36,7 @@ const NotificationDetails = () => {
       case 0:
         return truncateMessage(`${notif.senderName} gönderinizi beğendi`, 75);
       case 1:
-        return truncateMessage(`${notif.senderName} gönderinize yorum yaptı: ${notif.text}`, 75);
+        return truncateMessage(`${notif.senderName} gönderinize yorum yaptı: ${notif.text}`, 60);
       default:
         return truncateMessage(`${notif.senderName} yeni bir bildirim gönderdi`, 75);
     }
