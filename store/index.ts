@@ -12,6 +12,7 @@ import createUserSlice, { TUserState } from "./slices/usersSlice";
 import createFollowSlice, { TFollowState } from "./slices/followSlice";
 import createAboutsSlice, { TAboutState } from "./slices/aboutsSlice";
 import createNotificationSlice, { TNotificationState } from "./slices/notification";
+import createReportSlice, { TReportState } from "./slices/reportSlice";
 
 export type TStoreState = TAuthState &
   TErrorState &
@@ -24,6 +25,7 @@ export type TStoreState = TAuthState &
   TFollowState &
   TUserState &
   TNotificationState &
+  TReportState &
   TAboutState;
 // Add other slices here
 
@@ -41,6 +43,7 @@ export const useStore = create<TStoreState>()(
       ...createFollowSlice(...a),
       ...createAboutsSlice(...a),
       ...createNotificationSlice(...a),
+      ...createReportSlice(...a),
       /**ekstra slices will be add here */
     }),
     {

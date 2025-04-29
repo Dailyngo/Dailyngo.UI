@@ -46,5 +46,11 @@ export default {
 
 	/** notifications */
 	getAllNotifications: () => '/api/Notification',
-	/** error  */
+
+
+	/** reports */
+	getAllReports: (data: any) => `/api/Reports?${qs.stringify(data, { skipNulls: true })}`,
+	reportPost: (id: string) => `/api/Reports/post/${id}`,
+	setReportStatus: (id: string) => `/api/Reports/${id}/setprocess`,
+	deletePostWithReport: (id: string) => `/api/Reports/${id}`,
 };
