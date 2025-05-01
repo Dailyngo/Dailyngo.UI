@@ -81,7 +81,7 @@ export default function HomePage() {
         ) : (
           <>
             {posts && posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} onlyView={false} />
             ))}
 
             <div ref={loaderRef} className="text-center py-8">
