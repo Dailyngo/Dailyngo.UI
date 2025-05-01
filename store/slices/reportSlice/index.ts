@@ -4,12 +4,19 @@ import { StateCreator } from "zustand";
 
 export interface ReportData{
     id: string;
-    postId: string;
     reason: string | null;
     reportedBy: IdNameResponse;
     isProcess: boolean;
     createdAt: string;
 }
+
+export interface ReportPostData {
+    id: string;
+    isDeleted: boolean;
+    lastReportDate : string | null;
+    reportDetails: ReportData[];
+}
+
 
 interface IdNameResponse{
     id: string;
@@ -18,27 +25,26 @@ interface IdNameResponse{
 
 
 export interface TReportState {
-    reports: ReportData[];
+    reports: ReportPostData[];
     reportLoading: boolean;
     reportError: string | null;
     
-    getReports: (status : boolean) => Promise<void>;
+    getReports: () => Promise<void>;
     reportPost: (postId: string, reason: string|null) => Promise<boolean>;
     deletePostWithReport: (postId: string) => Promise<boolean>;
-    setReportStatus: (reportId: string) => Promise<boolean>;
+    setReportStatus: (postId: string) => Promise<boolean>;
 }
 
 const createReportSlice: StateCreator<TStoreState, [], [], TReportState> = (set, get) => ({
     reports: [],
     reportLoading: false,
     reportError: null,
-    getReports: async (status : boolean) => {
+    getReports: async () => {
         try {
             set({ reportError: null, reportLoading: true });
             const response = await getAllReportsService<
-                ResponseData<ReportData>,
-                {isProcess: boolean}
-            >({ isProcess: status });
+                ResponseData<ReportPostData>
+            >();
             set({ reports: response.data.data });
         } catch (error: any) {
             set({ reportError: error.response.data.messages });
@@ -56,7 +62,7 @@ const createReportSlice: StateCreator<TStoreState, [], [], TReportState> = (set,
             set({ reportLoading: false });
             return true;
         } catch (error: any) {
-            set({ reportError: error.response.data.messages });
+            set({ reportError: error.response.data.messages, reportLoading: false });
             setTimeout(() => {
                 set({ reportError: null });
             }, 3000);
@@ -70,21 +76,21 @@ const createReportSlice: StateCreator<TStoreState, [], [], TReportState> = (set,
             set({ reportLoading: false });
             return true;
         } catch (error: any) {
-            set({ reportError: error.response.data.messages });
+            set({ reportError: error.response.data.messages, reportLoading: false });
             setTimeout(() => {
                 set({ reportError: null });
             }, 3000);
             return false;
         }
     },
-    setReportStatus: async (reportId: string) => {
+    setReportStatus: async (postId: string) => {
         try {
             set({ reportError: null, reportLoading: true });
-            await setReportStatusService(reportId);
+            await setReportStatusService(postId);
             set({ reportLoading: false });
             return true;
         } catch (error: any) {
-            set({ reportError: error.response.data.messages });
+            set({ reportError: error.response.data.messages, reportLoading: false });
             setTimeout(() => {
                 set({ reportError: null });
             }, 3000);

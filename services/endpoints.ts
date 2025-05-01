@@ -49,8 +49,11 @@ export default {
 
 
 	/** reports */
-	getAllReports: (data: any) => `/api/Reports?${qs.stringify(data, { skipNulls: true })}`,
+	getAllReports: () => `/api/Reports`,
 	reportPost: (id: string) => `/api/Reports/post/${id}`,
 	setReportStatus: (id: string) => `/api/Reports/${id}/setprocess`,
 	deletePostWithReport: (id: string) => `/api/Reports/${id}`,
+
+	/** statistic */
+	getStatistics: () => `/api/Statistics/current`,
 };

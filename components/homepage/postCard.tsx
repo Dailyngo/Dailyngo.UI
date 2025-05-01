@@ -12,7 +12,7 @@ import LikesModal from '../ui/LikesModal';
 
 const { TextArea } = Input;
 
-const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
+const PostCard: React.FC<{ post: PostData,onlyView:boolean }> = ({ post,onlyView = false }) => {
   const router = useRouter();
   const { 
     deletePost,
@@ -35,6 +35,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
 
   const handlePostClick = () => {
+    if(onlyView) return;
     router.push(`/posts/${post.id}`);
   };
 
@@ -66,6 +67,7 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click when liking
     
+    if(onlyView) return;
     try {
       if (liked) {
         setLiked(false);
@@ -144,6 +146,10 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
       router.push("/profile");
       return;
     }
+    if(onlyView) {
+      window.open(`/users/${post.userId}`, "_blank");
+      return;
+    }
     router.push(`/users/${post.userId}`);
   };
 
@@ -175,18 +181,20 @@ const PostCard: React.FC<{ post: PostData }> = ({ post }) => {
             </div>
           </div>
         </div>
-        <Dropdown
-          menu={{
-            items: dropdownItems,
-            onClick: handleMenuClick,
-          }}
-          placement="bottomRight"
-          trigger={["click"]}
-        >
-          <Button type="text" onClick={(e) => e.stopPropagation()}>
-            <Icon icon="mdi:dots-vertical" />
-          </Button>
-        </Dropdown>
+        {!onlyView && 
+          <Dropdown
+            menu={{
+              items: dropdownItems,
+              onClick: handleMenuClick,
+            }}
+            placement="bottomRight"
+            trigger={["click"]}
+          >
+            <Button type="text" onClick={(e) => e.stopPropagation()}>
+              <Icon icon="mdi:dots-vertical" />
+            </Button>
+          </Dropdown>
+        }
       </div>
 
       {/* Metin içeriği - HTML render etme */}

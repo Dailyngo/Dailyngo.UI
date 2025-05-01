@@ -23,8 +23,11 @@ export const debounce = (func: Function, delay: number) => {
   };
 };
 
-export function getTokenInfos() {
-  const token = localStorage.getItem("token");
+export function getTokenInfos(token: string | null = null) {
+
+  if (token === null) {
+    token = localStorage.getItem("token");
+  }
 
   if (!token) {
     return null;
@@ -48,6 +51,7 @@ export function getTokenInfos() {
     return null;
   }
 }
+
 
 export function getToken() {
   const token = localStorage.getItem("token");

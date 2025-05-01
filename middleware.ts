@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import endpoints from './services/endpoints';
 import { ENVIRONMENT } from './configurations';
+import { getTokenInfos } from './utils/helpers';
 
 function clearAuthCookies(response: NextResponse) {
 	const cookieNames = [
@@ -31,6 +32,8 @@ export default withAuth(
 		const isAuth = !!token;
 		const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
 		 req.nextUrl.pathname.startsWith('/register');
+
+		const isAdminPage = req.nextUrl.pathname.startsWith('/admin');
 
 		if (isAuth) {
 			console.log('[Middleware] User is authenticated. Verifying email status...');
@@ -61,6 +64,15 @@ export default withAuth(
 				}
 
 				console.log('[Middleware] Email verified, proceeding.');
+				if(isAdminPage){
+					const roles = getTokenInfos(token?.token as string | null).roles ?? "";
+					if (!roles.toLowerCase().includes("superadmin")) {
+						console.log(
+							"[Middleware] User is not a superadmin. Redirecting to home."
+						);
+						return NextResponse.redirect(new URL("/", req.url));
+					}
+				}
 				return null;
 			} catch (error: any) {
 				if (error?.response?.status === 401) {
