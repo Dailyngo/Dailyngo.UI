@@ -27,7 +27,7 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
   const [current, setCurrent] = useState('1');
   const pathname = usePathname();
   const router = useRouter();
-  const tokenInfo = getTokenInfos();
+  const [userRoles, setUserRoles] = useState('');
   const { logout } = useStore();
 
   // Menü öğeleri
@@ -68,6 +68,11 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
     else setCurrent('0');
   }, [pathname]);
 
+  useEffect(() => {
+    const tokenInfo = getTokenInfos();
+    setUserRoles(tokenInfo.roles);
+  }, []);
+
   const handleLogout = async () => {
     await logout();
   };
@@ -107,7 +112,7 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
 
         <div className="flex items-center gap-3">
           {/* Admin Paneli Butonu - Sadece admin kullanıcılara göster */}
-          {tokenInfo.roles.toLowerCase().includes("superadmin") && (
+          {userRoles.toLowerCase().includes("superadmin") && (
             <Tooltip title="Admin Panel">
               <Button
                 type="primary" 
