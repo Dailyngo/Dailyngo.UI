@@ -12,7 +12,7 @@ import LikesModal from '../ui/LikesModal';
 
 const { TextArea } = Input;
 
-const PostCard: React.FC<{ post: PostData,onlyView:boolean }> = ({ post,onlyView = false }) => {
+const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyView }) => {
   const router = useRouter();
   const { 
     deletePost,
