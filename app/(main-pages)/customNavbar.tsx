@@ -1,8 +1,8 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { Menu, Dropdown, Button, Badge } from "antd";
+import { Menu, Dropdown, Button, Badge, Tooltip } from "antd";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useStore } from '../../store';
 import {
   Home,
@@ -13,8 +13,10 @@ import {
   NotificationFill,
   Message,
   MessageFill,
+  Admin
 } from "@/components/svgicon";
 import { useEffect, useState } from "react";
+import { getTokenInfos } from "@/utils/helpers";
 
 type Params = {
   notificationCount: number;
@@ -24,6 +26,8 @@ type Params = {
 const CustomNavbar = ({ notificationCount, children }: Params) => {
   const [current, setCurrent] = useState('1');
   const pathname = usePathname();
+  const router = useRouter();
+  const tokenInfo = getTokenInfos();
   const { logout } = useStore();
 
   // Menü öğeleri
@@ -68,6 +72,10 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
     await logout();
   };
 
+  const navigateToAdmin = () => {
+    router.push('/admin');
+  };
+
   const profileItems = [
     {
       key: '1',
@@ -97,7 +105,23 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Admin Paneli Butonu - Sadece admin kullanıcılara göster */}
+          {tokenInfo.roles.toLowerCase().includes("superadmin") && (
+            <Tooltip title="Admin Panel">
+              <Button
+                type="primary" 
+                shape="round"
+                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 shadow-md"
+                onClick={navigateToAdmin}
+                icon={<Admin />}
+                size="middle"
+              >
+                <span className="ml-1 text-xs sm:text-sm">Admin</span>
+              </Button>
+            </Tooltip>
+          )}
+          
           <Dropdown
             menu={{ items: profileItems }}
             placement="bottomRight"
