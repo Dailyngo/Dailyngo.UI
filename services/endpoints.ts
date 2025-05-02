@@ -56,4 +56,8 @@ export default {
 
 	/** statistic */
 	getStatistics: () => `/api/Statistics/current`,
+
+	/** messages*/
+	getAllMessages: (id: any, data: any) => `/api/Message/${id}?${qs.stringify(data, { skipNulls: true })}`,
+	getAllUsersMessage: (data: any) => `/api/Message/users?${qs.stringify(data, { skipNulls: true })}`,
 };

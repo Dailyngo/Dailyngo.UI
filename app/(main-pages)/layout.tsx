@@ -17,7 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [notificationCount, setNotificationCount] = useState(0);
-  const {getAllNotifications} = useStore();
+  const [messageNotificationCount, setMessageNotificationCount] = useState(0);
+  const {getAllNotifications,getAllUsersMessage} = useStore();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -27,6 +28,9 @@ export default function RootLayout({
 
     signalRHelper.on("ReceiveNotification",async (message: any) => {
       setNotificationCount(message);
+    });
+    signalRHelper.on("ReceiveMessageNotification",async (message: any) => {
+      setMessageNotificationCount(message);
     });
     return () => {
       signalRHelper.stopConnection();
@@ -43,12 +47,26 @@ export default function RootLayout({
     fetchNotifications();
   }, [notificationCount]);
 
+  useEffect(() => {
+    const fetchUsersMessage = async () => {
+      if(pathname === "/messages") {
+        await getAllUsersMessage(1);
+      };
+    };
+
+    fetchUsersMessage();
+  }, [messageNotificationCount]);
+
   return (
-    <div className="h-screen">
-      <CustomNavbar notificationCount={notificationCount}>
-        {children}
-      </CustomNavbar>
-      <FriendlyMessage />
-    </div>
+		<div className="h-screen">
+			{pathname !== "/messages" ? (
+				<CustomNavbar notificationCount={notificationCount} messageNotificationCount={messageNotificationCount}>
+					{children}
+				</CustomNavbar>
+			) : (
+				children
+			)}
+			<FriendlyMessage />
+		</div>
   );
 }
