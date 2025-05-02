@@ -20,10 +20,11 @@ import { getTokenInfos } from "@/utils/helpers";
 
 type Params = {
   notificationCount: number;
+  messageNotificationCount: number;
   children: React.ReactNode;
 };
 
-const CustomNavbar = ({ notificationCount, children }: Params) => {
+const CustomNavbar = ({ notificationCount,messageNotificationCount, children }: Params) => {
   const [current, setCurrent] = useState('1');
   const pathname = usePathname();
   const router = useRouter();
@@ -58,7 +59,12 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
       key: '4',
       label: 'Messages',
       path: '/messages',
-      icon: current === '4' ? <MessageFill /> : <Message />,
+      icon: 
+      (
+        <Badge count={messageNotificationCount}>
+          {current === '4' ? <MessageFill /> : <Message />}
+        </Badge>
+      ),
     },
   ];
 
@@ -148,12 +154,12 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
       </nav>
 
       {/* Ana İçerik Alanı */}
-      <main className="flex-1 mt-16 mb-16 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 mt-16 mb-0 overflow-y-auto p-4 md:p-6">
         {children}
       </main>
 
       {/* Alt Navigasyon Çubuğu */}
-      <nav className="w-full bg-white border-t border-gray-200 fixed bottom-0 z-50 py-3">
+     { pathname !== "/messages" && <nav className="w-full bg-white border-t border-gray-200 fixed bottom-0 z-50 py-3">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex justify-between items-center">
             {menuItems.map((item) => (
@@ -168,7 +174,7 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
             ))}
           </div>
         </div>
-      </nav>
+      </nav>}
     </div>
   );
 };

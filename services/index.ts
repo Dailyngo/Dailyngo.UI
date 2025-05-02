@@ -94,3 +94,9 @@ export const deletePostWithReportService: IRequestModel = (data: any) =>
 /** Statistics */
 export const getStatsService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getStatistics());
+
+/** Messages */
+export const getAllMessagesService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getAllMessages(data.userId, data.queryParams));
+export const getAllUsersMessageService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getAllUsersMessage(data));
