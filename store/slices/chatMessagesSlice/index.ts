@@ -27,6 +27,7 @@ export type TChatMessagesState = {
 
   getAllMessages: (userId: string, pageNumber: number) => Promise<void>; 
   getAllUsersMessage: (pageNumber: number) => Promise<void>;
+  setNewUserMessages:(userId: string, message: Message) => Promise<void>;
 };
 
 const chatMessagesSlice: StateCreator<TStoreState, [], [], TChatMessagesState> = (set, get) => ({
@@ -38,12 +39,16 @@ const chatMessagesSlice: StateCreator<TStoreState, [], [], TChatMessagesState> =
   getAllMessages: async (userId: string, pageNumber: number = 1) => {
     try {
       set({ messageLoading: true,messageError: null });
-      const response = await getAllMessagesService<ResponseData<Message>,
-        { userId: string; queryParams: { pageNumber: number } }
-      >({
-        userId,
-        queryParams: { pageNumber },
-      });
+      const response = await getAllMessagesService<
+			ResponseData<Message>,
+			{
+				userId: string;
+				queryParams: { pageNumber: number; pageSize: number };
+			}
+		>({
+			userId,
+			queryParams: { pageNumber, pageSize: 40 },
+		});
 
       if(pageNumber === 1){
         set((state) => ({
@@ -88,6 +93,29 @@ const chatMessagesSlice: StateCreator<TStoreState, [], [], TChatMessagesState> =
       set({ messageLoading: false, messageError: error.response?.data?.messages });
     }
   },
+
+  setNewUserMessages: async (userId: string, message: Message) => {
+    set((state) => {
+      const currentMessages = state.userMessages[userId] || [];
+      const maxMessages = 40;
+
+      let updatedMessages = [...currentMessages, message]; 
+
+      if (updatedMessages.length > maxMessages) {
+        updatedMessages.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        updatedMessages = updatedMessages.slice(0, maxMessages);
+      }
+
+      return {
+        userMessages: {
+          ...state.userMessages,
+          [userId]: updatedMessages,
+        },
+      };
+    });
+  }
 });
 
 export default chatMessagesSlice;

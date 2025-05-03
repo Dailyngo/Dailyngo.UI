@@ -43,7 +43,7 @@ export interface TUserState {
 
   // Actions
   fetchBirthdays: () => Promise<void>;
-  getSearchUsers:(searchTerm:string,pageNumber: number) => Promise<void>;
+  getSearchUsers:(searchTerm:string,pageNumber?: number | null) => Promise<void>;
   getUserProfileCard: (userId?: string | null) => Promise<UserProfileData | null>;
   resetBirthdayError: () => void;
 }
