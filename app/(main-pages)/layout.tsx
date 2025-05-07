@@ -29,7 +29,8 @@ export default function RootLayout({
     signalRHelper.on("ReceiveNotification",async (message: any) => {
       setNotificationCount(message);
     });
-    signalRHelper.on("ReceiveMessageNotification",async (message: any) => {
+    signalRHelper.on("ReceiveMessageNotification", async (message: any) => {
+      await fetchUsersMessage();
       setMessageNotificationCount(message);
     });
     return () => {
@@ -47,13 +48,13 @@ export default function RootLayout({
     fetchNotifications();
   }, [notificationCount]);
 
-  useEffect(() => {
-    const fetchUsersMessage = async () => {
-      if(pathname === "/messages") {
-        await getAllUsersMessage(1);
-      };
+  const fetchUsersMessage = async () => {
+    if(pathname === "/messages") {
+      await getAllUsersMessage(1);
     };
+  };
 
+  useEffect(() => {
     fetchUsersMessage();
   }, [messageNotificationCount]);
 

@@ -10,6 +10,7 @@ export interface MessageUser {
   lastMessageDate: string;
   lastMessage?: string;
   lastMessageOwner: boolean;
+  lastMessageReadDate?:string | null;
 }
 
 export interface Message{
@@ -79,15 +80,24 @@ const chatMessagesSlice: StateCreator<TStoreState, [], [], TChatMessagesState> =
       set({ messageLoading: true });
       const response = await getAllUsersMessageService<
 			ResponseData<MessageUser>,
-			{ pageNumber: number }
+			{ pageNumber: number; pageSize: number }
 		>({
 			pageNumber,
+			pageSize: 40,
 		});
 
-      set({
-        messageUsers: response.data.data,
+      if (pageNumber === 1) {
+        set({
+          messageUsers: response.data.data,
+          messageLoading: false,
+        });
+        return;
+      }
+
+      set((state) => ({
+        messageUsers: [...state.messageUsers, ...response.data.data],
         messageLoading: false,
-      });
+      }));
     } catch (error :any) {
       console.error("Error fetching users' messages:", error);
       set({ messageLoading: false, messageError: error.response?.data?.messages });
