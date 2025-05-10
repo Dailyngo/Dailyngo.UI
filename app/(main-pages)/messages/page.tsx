@@ -295,7 +295,7 @@ const Messages = () => {
 			if (messageInput.trim()) {
 				const escapedText = escapeHtml(messageInput.trim());
 				const formattedText = escapedText.replace(/\n/g, "<br>");
-				htmlContent += `<p style="margin:0 0 8px 0;">${formattedText}</p>`;
+				htmlContent += `<p>${formattedText}</p>`;
 			}
 
 			if (selectedImage) {
@@ -710,10 +710,11 @@ const Messages = () => {
 															? "font-medium text-gray-800"
 															: "text-gray-500"
 													}`}
-												>
-													{user.lastMessageOwner 
+													dangerouslySetInnerHTML={{ __html: (user.lastMessageOwner 
 														? formatReadStatus(user) || user.lastMessage 
-														: user.lastMessage}
+														: user.lastMessage) as string}}
+												>
+													
 												</p>
 											</div>
 										</div>
@@ -751,7 +752,7 @@ const Messages = () => {
 				{selectedUser ? (
 					<div className="flex-1 flex flex-col h-full">
 						{/* Chat Header */}
-						<div className="flex-none p-4 bg-white border-b border-gray-200 flex items-center justify-between z-10 shadow">
+						<div className="flex-none p-4 bg-white border-b border-gray-200 flex items-center justify-between z-10 shadow fixed w-full">
 							<div className="flex items-center">
 								<Button
 									type="text"
@@ -800,9 +801,10 @@ const Messages = () => {
 							<Button
 								type="text"
 								shape="circle"
+								disabled={true}
 								icon={
 									<Icon
-										icon="mdi:dots-vertical"
+										icon="mdi:phone"
 										width="24"
 										height="24"
 										className="text-gray-700"
@@ -812,7 +814,7 @@ const Messages = () => {
 						</div>
 
 						{/* Messages Area */}
-						<div className="flex-1 overflow-y-auto bg-gray-50" ref={messagesContainerRef}>
+						<div className="flex-1 overflow-y-auto bg-gray-50 mt-16" ref={messagesContainerRef}>
 							<div className="p-4 space-y-3 flex flex-col">
 								{selectedUser && userMessages && userMessages[selectedUser.userId] && (
 									<>
