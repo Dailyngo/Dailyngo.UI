@@ -12,7 +12,7 @@ import LikesModal from '../ui/LikesModal';
 
 const { TextArea } = Input;
 
-const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyView }) => {
+const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post, onlyView}) => {
   const router = useRouter();
   const { 
     deletePost,
@@ -33,6 +33,7 @@ const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyVie
   const [reportReason, setReportReason] = useState<string>("");
   const [showLikes, setShowLikes] = useState(false);
   const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const handlePostClick = () => {
     if(onlyView) return;
@@ -63,6 +64,37 @@ const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyVie
       );
     }
   }, [reportError]);
+
+  useEffect(() => {
+    const fetchImageUrl = async () => {
+      const storedData = localStorage.getItem(`post-image-${post.id}`);
+      const currentTime = new Date().getTime();
+      const tenMinutes = 10 * 60 * 1000;
+
+      if (storedData) {
+        const { url, timestamp } = JSON.parse(storedData);
+        if (currentTime - timestamp < tenMinutes) {
+          setImageUrl(url);
+          return;
+        }
+      }
+
+      if (post.imageKey) {
+        try {
+          const response = await fetch(`/api/upload?key=${post.imageKey}`);
+          if (response.ok) {
+            const result = await response.json();
+            setImageUrl(result);
+            localStorage.setItem(`post-image-${post.id}`, JSON.stringify({ url: result, timestamp: currentTime }));
+          }
+        } catch (error) {
+          console.error('Error fetching image URL:', error);
+        }
+      }
+    };
+
+    fetchImageUrl();
+  }, [post.id, post.imageKey]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click when liking
@@ -159,12 +191,12 @@ const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyVie
       <div className="p-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <Avatar
-            src={post.userProfileImage || undefined}
+            src={post.userProfileImageKey || undefined}
             size={40}
             onClick={handleUserClick}
             className="cursor-pointer"
           >
-            {!post.userProfileImage &&
+            {!post.userProfileImageKey &&
               post.userName.charAt(0).toUpperCase()}
           </Avatar>
           <div>
@@ -203,6 +235,13 @@ const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post,onlyVie
         onClick={handlePostClick}
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
+
+      {/* Image rendering with rounded corners */}
+      {imageUrl && (
+        <div className="px-4 pb-3">
+          <img src={imageUrl} alt="Post Image" className="rounded-lg w-full" />
+        </div>
+      )}
 
       {/* Etkileşim butonları ve sayaçları */}
       <div className="px-4 py-4 flex justify-between border-t border-gray-100">

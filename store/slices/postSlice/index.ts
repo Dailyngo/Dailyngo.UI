@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 import { ResponseSingleData, TStoreState } from "../..";
 import { createPostService, deletePostService, getHomePagePostsService, getPostDetailsService, getUserPostsService } from "@/services";
+import PostCard from "@/components/homepage/postCard";
 
 // Post veri tipi
 export interface PostData {
@@ -13,7 +14,8 @@ export interface PostData {
   isOwner: boolean;
   userId: string;
   userName: string;
-  userProfileImage: string | null;
+  imageKey?: string;
+  userProfileImageKey: string | null;
   isFollowing: boolean;
 }
 
@@ -24,6 +26,7 @@ interface ResponseData{
 // Yeni post oluşturma için tip
 export interface CreatePostData {
   content: string;
+  imageKey?: string;
   id?: string;
 }
 
@@ -142,10 +145,10 @@ const createPostSlice: StateCreator<TStoreState, [], [], TPostState> = (set, get
       await deletePostService(postId);
       
       // Ana sayfa gönderilerinden silme
-      const updatedPosts = get().posts.filter(post => post.id !== postId);
+      const updatedPosts = get().posts.filter((post: PostData) => post.id !== postId);
       
       // Kullanıcı gönderilerinden silme
-      const updatedUserPosts = get().userPosts.filter(post => post.id !== postId);
+      const updatedUserPosts = get().userPosts.filter((post: PostData) => post.id !== postId);
       
       // Seçili gönderiyi güncelleme
 

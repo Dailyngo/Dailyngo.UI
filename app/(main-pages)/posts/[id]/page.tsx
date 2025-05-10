@@ -18,6 +18,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [likeCount, setLikeCount] = useState(selectedPost?.likeCount);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isLikesModalVisible, setIsLikesModalVisible] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const { 
 	getPostDetailService,
@@ -44,7 +45,6 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 		fetchPostDetail();
 	}, [params.id]);
 
-
     useEffect(() => {
 	  if (postError) {
 		setErrorConfirmInfoModal(
@@ -55,6 +55,40 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 		);
 	  }
 	}, [postError]);
+
+	useEffect(() => {
+		const fetchImageUrl = async () => {
+			if (selectedPost) {
+				const storedData = localStorage.getItem(`post-image-${selectedPost.id}`);
+				const currentTime = new Date().getTime();
+				const tenMinutes = 10 * 60 * 1000;
+
+				if (storedData) {
+					const { url, timestamp } = JSON.parse(storedData);
+					if (currentTime - timestamp < tenMinutes) {
+						setImageUrl(url);
+						return;
+					}
+				}
+
+				if (selectedPost.imageKey) {
+					try {
+						const response = await fetch(`/api/upload?key=${selectedPost.imageKey}`);
+						if (response.ok) {
+							const result = await response.json();
+							setImageUrl(result);
+							localStorage.setItem(`post-image-${selectedPost.id}`, JSON.stringify({ url: result, timestamp: currentTime }));
+							console.log("hellor" , result);
+						}
+					} catch (error) {
+						console.error('Error fetching image URL:', error);
+					}
+				}
+			}
+		};
+
+		fetchImageUrl();
+	}, [selectedPost, selectedPost?.imageKey]);
 
 	const handleLike = async (e: React.MouseEvent) => {
 		e.stopPropagation(); 
@@ -147,12 +181,12 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 					<div className="p-4 flex justify-between items-center">
 						<div className="flex items-center space-x-3">
 							<Avatar
-								src={selectedPost.userProfileImage || undefined}
+								src={selectedPost.userProfileImageKey || undefined}
 								size={40}
 								onClick={handleUserClick}
 								className="cursor-pointer"
 							>
-								{!selectedPost.userProfileImage &&
+								{!selectedPost.userProfileImageKey &&
 									selectedPost.userName
 										.charAt(0)
 										.toUpperCase()}
@@ -192,6 +226,13 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 							__html: selectedPost.content,
 						}}
 					/>
+
+					{/* Image rendering with rounded corners */}
+					{imageUrl && (
+						<div className="px-4 pb-3">
+							<img src={imageUrl} alt="Post Image" className="rounded-lg w-full" />
+						</div>
+					)}
 
 					{/* Post stats */}
 					<div className="px-4 py-4 flex justify-between border-t border-gray-100">
