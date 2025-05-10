@@ -230,18 +230,22 @@ const PostCard: React.FC<{ post: PostData,onlyView: boolean }> = ({ post, onlyVi
       </div>
 
       {/* Metin içeriği - HTML render etme */}
-      <div
-        className="px-4 pb-3 text-gray-700 post-content cursor-pointer"
+      <div className="px-4 pb-3 text-gray-700 post-content cursor-pointer"
         onClick={handlePostClick}
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
+      >
+        <div
+          className="px-4 pb-3 text-gray-700 post-content"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
-      {/* Image rendering with rounded corners */}
-      {imageUrl && (
-        <div className="px-4 pb-3">
-          <img src={imageUrl} alt="Post Image" className="rounded-lg w-full" />
-        </div>
-      )}
+        {/* Image rendering with rounded corners */}
+        {imageUrl && (
+          <div className="px-4 pb-3">
+            <img src={imageUrl} alt="Post Image" className="rounded-lg w-full" />
+          </div>
+        )}
+      </div>
+      
 
       {/* Etkileşim butonları ve sayaçları */}
       <div className="px-4 py-4 flex justify-between border-t border-gray-100">
