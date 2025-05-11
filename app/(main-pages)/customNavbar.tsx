@@ -1,8 +1,8 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { Menu, Dropdown, Button, Badge } from "antd";
+import { Menu, Dropdown, Button, Badge, Tooltip } from "antd";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useStore } from '../../store';
 import {
   Home,
@@ -13,17 +13,22 @@ import {
   NotificationFill,
   Message,
   MessageFill,
+  Admin
 } from "@/components/svgicon";
 import { useEffect, useState } from "react";
+import { getTokenInfos } from "@/utils/helpers";
 
 type Params = {
   notificationCount: number;
+  messageNotificationCount: number;
   children: React.ReactNode;
 };
 
-const CustomNavbar = ({ notificationCount, children }: Params) => {
+const CustomNavbar = ({ notificationCount,messageNotificationCount, children }: Params) => {
   const [current, setCurrent] = useState('1');
   const pathname = usePathname();
+  const router = useRouter();
+  const [userRoles, setUserRoles] = useState('');
   const { logout } = useStore();
 
   // Menü öğeleri
@@ -54,7 +59,12 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
       key: '4',
       label: 'Messages',
       path: '/messages',
-      icon: current === '4' ? <MessageFill /> : <Message />,
+      icon: 
+      (
+        <Badge count={messageNotificationCount}>
+          {current === '4' ? <MessageFill /> : <Message />}
+        </Badge>
+      ),
     },
   ];
 
@@ -64,8 +74,17 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
     else setCurrent('0');
   }, [pathname]);
 
+  useEffect(() => {
+    const tokenInfo = getTokenInfos();
+    setUserRoles(tokenInfo.roles);
+  }, []);
+
   const handleLogout = async () => {
     await logout();
+  };
+
+  const navigateToAdmin = () => {
+    router.push('/admin');
   };
 
   const profileItems = [
@@ -97,7 +116,23 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Admin Paneli Butonu - Sadece admin kullanıcılara göster */}
+          {userRoles.toLowerCase().includes("superadmin") && (
+            <Tooltip title="Admin Panel">
+              <Button
+                type="primary" 
+                shape="round"
+                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 shadow-md"
+                onClick={navigateToAdmin}
+                icon={<Admin />}
+                size="middle"
+              >
+                <span className="ml-1 text-xs sm:text-sm">Admin</span>
+              </Button>
+            </Tooltip>
+          )}
+          
           <Dropdown
             menu={{ items: profileItems }}
             placement="bottomRight"
@@ -119,12 +154,12 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
       </nav>
 
       {/* Ana İçerik Alanı */}
-      <main className="flex-1 mt-16 mb-16 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 mt-16 mb-0 overflow-y-auto p-4 md:p-6">
         {children}
       </main>
 
       {/* Alt Navigasyon Çubuğu */}
-      <nav className="w-full bg-white border-t border-gray-200 fixed bottom-0 z-50 py-3">
+     { pathname !== "/messages" && <nav className="w-full bg-white border-t border-gray-200 fixed bottom-0 z-50 py-3">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex justify-between items-center">
             {menuItems.map((item) => (
@@ -139,7 +174,7 @@ const CustomNavbar = ({ notificationCount, children }: Params) => {
             ))}
           </div>
         </div>
-      </nav>
+      </nav>}
     </div>
   );
 };

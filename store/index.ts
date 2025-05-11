@@ -4,7 +4,7 @@ import { devtools, persist } from "zustand/middleware";
 import createAuthSlice, { TAuthState } from "./slices/authSlice";
 import createErrorSlice, { TErrorState } from "./slices/errorSlice";
 import messageSlice, { TMessageState } from "./slices/messageSlice";
-import chatMessagesSlice, { TchatMessagesState } from "./slices/chatMessagesSlice";
+import chatMessagesSlice, { TChatMessagesState } from "./slices/chatMessagesSlice";
 import createPostSlice, { TPostState } from "./slices/postSlice";
 import createCommentSlice, { TCommentState } from "./slices/commentSlice";
 import createLikeSlice, { TLikeState } from "./slices/likeSlice";
@@ -12,11 +12,13 @@ import createUserSlice, { TUserState } from "./slices/usersSlice";
 import createFollowSlice, { TFollowState } from "./slices/followSlice";
 import createAboutsSlice, { TAboutState } from "./slices/aboutsSlice";
 import createNotificationSlice, { TNotificationState } from "./slices/notification";
+import createReportSlice, { TReportState } from "./slices/reportSlice";
+import createStatisticsSlice, { TStatisticsState } from "./slices/statistics";
 
 export type TStoreState = TAuthState &
   TErrorState &
   TMessageState &
-  TchatMessagesState &
+  TChatMessagesState &
   TPostState &
   TCommentState &
   TLikeState & 
@@ -24,6 +26,8 @@ export type TStoreState = TAuthState &
   TFollowState &
   TUserState &
   TNotificationState &
+  TReportState &
+  TStatisticsState &
   TAboutState;
 // Add other slices here
 
@@ -41,6 +45,8 @@ export const useStore = create<TStoreState>()(
       ...createFollowSlice(...a),
       ...createAboutsSlice(...a),
       ...createNotificationSlice(...a),
+      ...createReportSlice(...a),
+      ...createStatisticsSlice(...a),
       /**ekstra slices will be add here */
     }),
     {

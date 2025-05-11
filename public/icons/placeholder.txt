@@ -1,0 +1,10 @@
+Bu dizinde gerçek ikon dosyaları olmalıdır:
+1. icon-192x192.png (192x192 piksel)
+2. icon-512x512.png (512x512 piksel)
+
+Bu dosyaları oluşturmak için şunları yapabilirsiniz:
+1. Logo.ico dosyasını bir görüntü düzenleme programıyla PNG formatına dönüştürüp yeniden boyutlandırabilirsiniz
+2. Online PNG ikon oluşturucular kullanabilirsiniz
+3. Tasarımcınızdan isteyebilirsiniz
+
+Bu placeholder dosyasını daha sonra silebilirsiniz. 

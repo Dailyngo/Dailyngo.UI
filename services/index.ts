@@ -85,3 +85,23 @@ export const getOtherAboutService: IRequestModel = (data: any) =>
 /** Notifications */
 export const getAllNotificationsService: IRequestModel = () =>
 	ApiRequest.get(endpoints.getAllNotifications());
+
+/** Reports */
+export const getAllReportsService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getAllReports());
+export const reportPostService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.reportPost(data.postId), data);
+export const setReportStatusService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.setReportStatus(data));
+export const deletePostWithReportService: IRequestModel = (data: any) =>
+	ApiRequest.delete(endpoints.deletePostWithReport(data));
+
+/** Statistics */
+export const getStatsService: IRequestModel = () =>
+	ApiRequest.get(endpoints.getStatistics());
+
+/** Messages */
+export const getAllMessagesService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getAllMessages(data.userId, data.queryParams));
+export const getAllUsersMessageService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getAllUsersMessage(data));

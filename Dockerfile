@@ -8,7 +8,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml .env.prod ./
 
 # pnpm ile bağımlılıkları kur
-RUN npm install -g pnpm && pnpm install --frozen-lockfile 
+RUN npm install -g pnpm && \
+    pnpm config set registry https://registry.npmjs.org/ && \
+    pnpm install --no-frozen-lockfile
 
 # Tüm dosyaları kopyala ve uygulamayı derle
 COPY . .

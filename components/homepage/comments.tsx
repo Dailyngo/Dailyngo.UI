@@ -206,6 +206,13 @@ const Comments: React.FC<CommentsProps> = ({ postId,handleSelectedPostDetail}) =
   }
 
   const handleUserClick = (userId : string) => {
+	const loginUserDetail = getTokenInfos();
+	const loginUserId = loginUserDetail?.sub;
+
+	if(loginUserId == userId) {
+		router.push("/profile");
+	return;
+	}
     router.push(`/users/${userId}`);
   };
 

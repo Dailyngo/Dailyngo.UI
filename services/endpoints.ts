@@ -48,5 +48,18 @@ export default {
 
 	/** notifications */
 	getAllNotifications: () => '/api/Notification',
-	/** error  */
+
+
+	/** reports */
+	getAllReports: () => `/api/Reports`,
+	reportPost: (id: string) => `/api/Reports/post/${id}`,
+	setReportStatus: (id: string) => `/api/Reports/${id}/setprocess`,
+	deletePostWithReport: (id: string) => `/api/Reports/${id}`,
+
+	/** statistic */
+	getStatistics: () => `/api/Statistics/current`,
+
+	/** messages*/
+	getAllMessages: (id: any, data: any) => `/api/Message/${id}?${qs.stringify(data, { skipNulls: true })}`,
+	getAllUsersMessage: (data: any) => `/api/Message/users?${qs.stringify(data, { skipNulls: true })}`,
 };

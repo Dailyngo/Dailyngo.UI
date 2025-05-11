@@ -147,7 +147,7 @@ const UserProfile = ({ userId }: UserProfileProps) => {
         return (
           userPosts &&
           userPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} onlyView={false} />
           ))
         );
       case "friends":
