@@ -2,13 +2,14 @@
 import React, { use, useEffect, useState } from "react";
 import moment from "moment";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { Avatar, Button, DatePicker, Input, Select, Menu, Card} from "antd";
+import { Avatar, Button, DatePicker, Input, Select, Menu, Card, Tabs, Modal } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import { useStore } from "@/store";
 import PostCard from "../homepage/postCard";
 import { UserProfileData } from "@/store/slices/usersSlice";
 import { ERRORS } from "@/store/slices/errorSlice";
 import { Link } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface UserProfileProps {
   userId?: string | null;
@@ -26,16 +27,22 @@ interface AboutData {
 }
 
 interface Friend {
-	id: number;
+	userId: string;  // Guid in TypeScript is represented as string
 	fullName: string;
 	userName: string;
-	profilePicture: string;
-  }
+	isFollower: boolean; // Kullanıcıyı takip eden kişi mi?
+	isFollowing: boolean; // Kullanıcıyı takip ediyor mu?
+	profilePicture?: string; // Optional for backward compatibility
+}
 
 const UserProfile = ({ userId }: UserProfileProps) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("posts");
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [visibleFriends, setVisibleFriends] = useState<Friend[]>([]); // Görünen arkadaşlar
+  const [pageNumber, setPageNumber] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFollowersTab, setIsFollowersTab] = useState(true);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isBioOpen, setIsBioOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [userProfileData, setUserProfileData] =
@@ -49,7 +56,11 @@ const UserProfile = ({ userId }: UserProfileProps) => {
     answerFollowRequest,
     createFollowRequest,
     followErrors,
+    getFollowUsers,
+    unfollowUser,
+    removeFollower,
     setErrorConfirmInfoModal,
+    followUsers,
   } = useStore();
 
   // Tab menü öğeleri
@@ -65,12 +76,13 @@ const UserProfile = ({ userId }: UserProfileProps) => {
   }, [about, getOwnAbout]);
 
   useEffect(() => {
-    if (activeTab == "posts") {
-      if (userPosts) {
-        getUserPosts(userId);
-      }
+    if (activeTab === "posts") {
+      getUserPosts(userId);
+    } else if (activeTab === "friends") {
+      getFollowUsers(isFollowersTab, userId, 1);
+      setPageNumber(1);
     }
-  }, [activeTab]);
+  }, [activeTab, isFollowersTab]);
 
   const getUserProfileCardData = async () => {
     try {
@@ -86,28 +98,46 @@ const UserProfile = ({ userId }: UserProfileProps) => {
     getUserProfileCardData();
   }, []);
 
-  useEffect(() => {
-    // Statik arkadaşlar verisini buraya ekliyoruz
-    const staticFriends = [
-      { id: 1, fullName: "Ali Yılmaz", userName: "ali123", profilePicture: "https://example.com/ali.jpg" },
-      { id: 2, fullName: "Ayşe Demir", userName: "ayse45", profilePicture: "https://example.com/ayse.jpg" },
-      { id: 3, fullName: "Mehmet Can", userName: "mehmet89", profilePicture: "https://example.com/mehmet.jpg" },
-      { id: 4, fullName: "Fatma Kaya", userName: "fatma_kaya", profilePicture: "https://example.com/fatma.jpg" },
-      { id: 5, fullName: "Ahmet Çelik", userName: "ahmetc", profilePicture: "https://example.com/ahmet.jpg" },
-      { id: 6, fullName: "Zeynep Arslan", userName: "zeynep_arslan", profilePicture: "https://example.com/zeynep.jpg" },
-      { id: 7, fullName: "Emre Koç", userName: "emreko", profilePicture: "https://example.com/emre.jpg" },
-      { id: 8, fullName: "Elif Aydın", userName: "elifay", profilePicture: "https://example.com/elif.jpg" },
-      { id: 9, fullName: "Burak Yıldız", userName: "buraky", profilePicture: "https://example.com/burak.jpg" },
-      { id: 10, fullName: "Seda Polat", userName: "sedap", profilePicture: "https://example.com/seda.jpg" },
-      { id: 11, fullName: "Canan Tekin", userName: "canantekin", profilePicture: "https://example.com/canan.jpg" },
-    ];
-    setFriends(staticFriends);
-    setVisibleFriends(staticFriends.slice(0, 9)); // İlk 9 arkadaş gösteriliyor
-  }, []);
+  const loadMoreFriends = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    const nextPage = pageNumber + 1;
+    await getFollowUsers(isFollowersTab, userId, nextPage);
+    setPageNumber(nextPage);
+    setIsLoading(false);
+  };
 
-  const loadMoreFriends = () => {
-    const nextFriends = friends.slice(visibleFriends.length, visibleFriends.length + 9);
-    setVisibleFriends([...visibleFriends, ...nextFriends]);
+  const handleFollowToggle = async (followUserId: string, isCurrentlyFollowing: boolean) => {
+    try {
+      if (isCurrentlyFollowing) {
+        await unfollowUser(followUserId);
+      } else {
+        await createFollowRequest(followUserId);
+      }
+      // Listeyi güncelle
+      await getFollowUsers(isFollowersTab, userId, 1);
+    } catch (error) {
+      console.error("Takip işlemi başarısız oldu:", error);
+    }
+  };
+
+  const handleRemoveFollower = async (followerId: string) => {
+    setSelectedUserId(followerId);
+    setConfirmModalVisible(true);
+  };
+
+  const confirmRemoveFollower = async () => {
+    if (!selectedUserId) return;
+    
+    try {
+      await removeFollower(selectedUserId);
+      await getFollowUsers(isFollowersTab, userId, 1);
+    } catch (error) {
+      console.error("Takipçi çıkarma işlemi başarısız oldu:", error);
+    } finally {
+      setConfirmModalVisible(false);
+      setSelectedUserId(null);
+    }
   };
 
   const renderContent = () => {
@@ -130,77 +160,111 @@ const UserProfile = ({ userId }: UserProfileProps) => {
           ))
         );
       case "friends":
+        const friendsList = followUsers[userId || ''] || [];
         return (
-          <div className="mt-4">
-            {visibleFriends.length > 0 ? (
+          <div className="mt-2 sm:mt-4 space-y-3 sm:space-y-4">
+            <div className="flex justify-center mb-3 sm:mb-4 mt-1">
+              <div className="flex bg-gray-100 p-1 rounded-md w-full max-w-xs">
+                <button
+                  className={`flex-1 px-3 sm:px-5 py-2 rounded-md font-medium transition-all duration-200 ${
+                    isFollowersTab
+                      ? "bg-black text-white shadow-md"
+                      : "text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setIsFollowersTab(true)}
+                >
+                  Takip
+                </button>
+                <button
+                  className={`flex-1 px-3 sm:px-5 py-2 rounded-md font-medium transition-all duration-200 ${
+                    !isFollowersTab
+                      ? "bg-black text-white shadow-md"
+                      : "text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setIsFollowersTab(false)}
+                >
+                  Takipçi
+                </button>
+              </div>
+            </div>
+            {friendsList.length > 0 ? (
               <>
-                {visibleFriends.map((friend) => (
+                {friendsList.map((friend) => (
                   <div
-                    key={friend.id}
-                    className="flex items-center justify-between mb-3 p-2 border rounded-lg shadow-md cursor-pointer hover:bg-gray-100 transition"
+                    key={friend.userId}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-xl shadow-sm transition-all duration-200"
                   >
                     {/* Profil Resmi ve Bilgiler */}
                     <div
-                      className="flex items-center cursor-pointer"
+                      className="flex items-center cursor-pointer w-full sm:w-auto"
                       onClick={() => {
-                        console.log(`Tıklanan arkadaş: ${friend.fullName}`);
-                        window.location.href = `/profile/${friend.userName}`;
+                        console.log(`Tıklanan kullanıcı: ${friend.fullName}, ID: ${friend.userId}`);
+                        router.push(`/users/${friend.userId}`);
                       }}
                     >
                       <Avatar
-                        size={48} // Profil resmini küçültmek için boyut azaltıldı
+                        size={40}
                         src={friend.profilePicture}
-                        className="mr-3"
+                        className="mr-3 border-2 border-white shadow-sm"
                         style={{ borderRadius: "50%" }}
                       />
                       <div>
-                        <h3 className="text-lg font-medium">{friend.fullName}</h3>
-                        <p className="text-gray-500 text-sm">@{friend.userName}</p>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-800">{friend.fullName}</h3>
+                        <p className="text-gray-500 text-xs sm:text-sm font-medium">@{friend.userName}</p>
                       </div>
                     </div>
 
-                    {/* Sil Butonu */}
-                    <Button
-                      type="primary"
-                      danger // Kırmızı renk için
-                      className="ml-3"
-                      onClick={() => {
-                        // Arkadaşı silme işlemi
-                        setFriends((prevFriends) =>
-                          prevFriends.filter((f) => f.id !== friend.id)
-                        );
-
-                        setVisibleFriends((prevVisibleFriends) => {
-                          const updatedVisibleFriends = prevVisibleFriends.filter(
-                            (f) => f.id !== friend.id
-                          );
-
-                          // Görünmeyen arkadaşlardan birini ekle
-                          const nextFriend = friends.find(
-                            (f) =>
-                              !updatedVisibleFriends.some((vf) => vf.id === f.id) &&
-                              !prevVisibleFriends.some((vf) => vf.id === f.id)
-                          );
-
-                          if (nextFriend) {
-                            return [...updatedVisibleFriends, nextFriend];
-                          }
-
-                          return updatedVisibleFriends;
-                        });
-
-                        console.log(`Silinen arkadaş: ${friend.fullName}`);
-                      }}
-                    >
-                      Takipten Çık
-                    </Button>
+                    {/* Takip Durumu Bilgisi ve Butonlar */}
+                    <div className="flex items-center mt-3 sm:mt-0 w-full sm:w-auto justify-end">
+                      {/* Takip/Takipten Çık Butonu */}
+                      {friend.isOwner ? (
+                        <span className="text-gray-500 text-xs sm:text-sm font-medium">Siz</span>
+                      ) : (
+                        <>
+                          {friend.isFollowRequest ? (
+                            <Input
+                              value="İstek Gönderildi"
+                              disabled
+                              className="bg-gray-200 text-gray-700 cursor-not-allowed text-center w-30"
+                            />
+                          ) : (
+                            <Button
+                              type={friend.isFollowing ? "default" : "primary"}
+                            onClick={() => {
+                              handleFollowToggle(friend.userId, friend.isFollowing);
+                            }}
+                            className={`text-xs sm:text-sm py-1 h-8 ${
+                              friend.isFollowing
+                                ? "border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
+                                : "bg-black hover:bg-gray-800 text-white border-none shadow-sm transition-all duration-200"
+                            }`}
+                          >
+                            {
+                               (friend.isFollowing ? "Takipten Çık" : friend.isFollower ?  "Sende Takip Et" : "Takip Et")
+                            }
+                          </Button>
+                          )}
+                          
+                          {!isFollowersTab && (
+                            <Button 
+                              type="text" 
+                              className="hover:bg-gray-100 ml-2 px-2 h-8" 
+                              onClick={() => handleRemoveFollower(friend.userId)}
+                              icon={<Icon icon="mdi:close" className="text-gray-500" />}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
-                {visibleFriends.length < friends.length && (
-                  <div className="text-center m-4">
+                {/* Daha Fazla Yükle butonu, sadece tam 40'ın katı kadar kullanıcı varsa göster */}
+                {friendsList.length > 0 && friendsList.length % 40 === 0 && (
+                  <div className="text-center py-4 sm:py-6">
                     <Button
                       type="primary"
-                      className="bg-black hover:bg-gray-800 text-white"
+                      loading={isLoading}
+                      className="bg-black hover:bg-gray-800 text-white font-medium px-4 sm:px-6 h-9 sm:h-10 rounded-full shadow-sm text-sm sm:text-base"
                       onClick={loadMoreFriends}
                     >
                       Daha Fazla Yükle
@@ -209,7 +273,21 @@ const UserProfile = ({ userId }: UserProfileProps) => {
                 )}
               </>
             ) : (
-              <div className="text-center text-gray-500">Henüz arkadaşınız yok.</div>
+              <div className="text-center py-8 sm:py-12">
+                <div className="inline-flex justify-center items-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                  <Icon icon="ant-design:user-outlined" width="42" className="text-gray-400" />
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-700">
+                  {isFollowersTab 
+                    ? "Henüz takipçiniz yok" 
+                    : "Henüz takip ettiğiniz kimse yok"}
+                </h3>
+                <p className="text-gray-500 mt-2 text-sm sm:text-base px-4 sm:px-0">
+                  {isFollowersTab
+                    ? "Profilinizi paylaşarak daha fazla takipçi edinebilirsiniz"
+                    : "İlgilendiğiniz kullanıcıları takip etmeye başlayabilirsiniz"}
+                </p>
+              </div>
             )}
           </div>
         );
@@ -248,13 +326,13 @@ const UserProfile = ({ userId }: UserProfileProps) => {
 
 
   return (
-    <div className="flex-1 max-w-3xl mx-auto bg-white p-6 mt-6 rounded-xl shadow-sm">
+    <div className="flex-1 max-w-3xl mx-auto bg-white p-3 sm:p-6 mt-4 sm:mt-6 rounded-xl shadow-sm">
       {userId && userProfileData?.isReceiverFollowRequest && (
-        <div className="bg-gray-200 p-2 rounded-lg shadow-md flex items-center justify-around mb-4">
+        <div className="bg-gray-200 p-2 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-around gap-2 mb-4">
           <span className="font-semibold text-gray-700">
             Takip İsteği
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-2 sm:mt-0 w-full sm:w-auto justify-center">
             <Button
               type="primary"
               className="bg-black hover:bg-gray-800 border-none text-white"
@@ -277,12 +355,12 @@ const UserProfile = ({ userId }: UserProfileProps) => {
         </div>
       )}
       {/* Profile Header Card */}
-      <div className="bg-gray-50 p-6 rounded-xl mb-6">
-        <div className="flex flex-col md:flex-row items-center gap-6">
+      <div className="bg-gray-50 p-3 sm:p-6 rounded-xl mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           {/* Profile Picture */}
           {userProfileData?.getUserResponse?.profilePicture ? (
             <Avatar
-              size={120}
+              size={100}
               src={
                 userProfileData?.getUserResponse?.profilePicture
               }
@@ -291,13 +369,13 @@ const UserProfile = ({ userId }: UserProfileProps) => {
             />
           ) : (
             <Avatar
-              size={120}
+              size={100}
               icon={<Icon icon="ant-design:user-outlined" />}
               className="bg-gray-800 shadow-lg"
             />
           )}
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <div className="flex-1 text-center sm:text-left mt-3 sm:mt-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
               {userProfileData?.getUserResponse?.fullName ??
                 "name"}
             </h2>
@@ -306,29 +384,29 @@ const UserProfile = ({ userId }: UserProfileProps) => {
               {userProfileData?.getUserResponse?.userName ??
                 "username"}
             </p>
-            <div className="flex justify-center md:justify-start gap-6">
+            <div className="flex justify-center sm:justify-start gap-4 sm:gap-6">
               <div className="text-center">
-                <span className="block text-xl font-semibold text-gray-800">
+                <span className="block text-lg sm:text-xl font-semibold text-gray-800">
                   {userProfileData?.postCount ?? 0}
                 </span>
-                <span className="text-gray-500">Gönderi</span>
+                <span className="text-gray-500 text-sm sm:text-base">Gönderi</span>
               </div>
               <div className="text-center">
-                <span className="block text-xl font-semibold text-gray-800">
+                <span className="block text-lg sm:text-xl font-semibold text-gray-800">
                   {userProfileData?.following ?? 0}
                 </span>
-                <span className="text-gray-500">Takip</span>
+                <span className="text-gray-500 text-sm sm:text-base">Takip</span>
               </div>
               <div className="text-center">
-                <span className="block text-xl font-semibold text-gray-800">
+                <span className="block text-lg sm:text-xl font-semibold text-gray-800">
                   {userProfileData?.follower ?? 0}
                 </span>
-                <span className="text-gray-500">Takipçi</span>
+                <span className="text-gray-500 text-sm sm:text-base">Takipçi</span>
               </div>
             </div>
           </div>
           {userId && (
-            <div className="flex justify-center md:justify-start mt-4">
+            <div className="flex justify-center sm:justify-start mt-4 w-full sm:w-auto">
               {userProfileData?.isSendFollowRequest ? (
                 <Input
                   value="İstek Gönderildi"
@@ -336,7 +414,7 @@ const UserProfile = ({ userId }: UserProfileProps) => {
                   className="bg-gray-200 text-gray-700 cursor-not-allowed text-center"
                 />
               ) : (
-                !userProfileData?.isFollowing && (
+                !userProfileData?.isFollowing ? (
                   <Button
                     type="primary"
                     onClick={async () => {
@@ -347,35 +425,67 @@ const UserProfile = ({ userId }: UserProfileProps) => {
                     Takip Et
                   </Button>
                 )
+                : (
+                  <Button
+                  type="default"
+                    onClick={() => {
+                      handleFollowToggle(userId, true);
+                    }}
+                    className={`text-xs sm:text-sm py-1 h-8 border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200`}
+                  >
+                    Takipten Çık
+                  </Button>
+                )
               )}
             </div>
           )}
         </div>
-        <div className="mt-4 text-center md:text-left">
+        <div className="mt-4 text-center sm:text-left">
           <p className="text-gray-700">{userProfileData?.bio}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex justify-center mb-6">
-        <Menu
-          mode="horizontal"
-          selectedKeys={[activeTab]}
-          onSelect={({ key }) => setActiveTab(key as string)}
-          items={tabItems}
-          className="border-b-0 text-lg w-full max-w-2xl"
-          style={{
-            borderBottom: "none",
-            fontSize: "1.125rem",
-            fontWeight: "500",
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-          }}
+      <div className="flex justify-center mb-4 sm:mb-6 overflow-x-auto whitespace-nowrap px-1">
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems.map(item => ({
+            ...item,
+            label: (
+              <span
+                className={
+                  (activeTab === item.key
+                    ? "bg-black text-white shadow-md"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200") +
+                  " transition-all duration-200 rounded-full px-3 sm:px-5 py-1 sm:py-2 text-sm sm:text-base font-semibold cursor-pointer"
+                }
+              >
+                {item.label}
+              </span>
+            ),
+          }))}
+          className="mx-auto custom-tabs"
+          tabBarGutter={8}
         />
       </div>
 
-      <div className="p-4">{renderContent()}</div>
+      <div className="p-2 sm:p-4">{renderContent()}</div>
+
+      {/* Takipçi Çıkarma Onay Modal'ı */}
+      <Modal
+        title="Takipçiyi Çıkar"
+        open={confirmModalVisible}
+        onOk={confirmRemoveFollower}
+        onCancel={() => setConfirmModalVisible(false)}
+        okText="Evet, Çıkar"
+        cancelText="İptal"
+        okButtonProps={{ 
+          style: { background: '#000', borderColor: '#000' } 
+        }}
+      >
+        <p>Bu kişiyi takipçilerinizden çıkarmak istediğinizden emin misiniz?</p>
+      </Modal>
     </div>
   );
 };

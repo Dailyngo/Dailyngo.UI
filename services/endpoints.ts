@@ -39,6 +39,8 @@ export default {
 	/** followers */
 	createFollowRequest: () => `/api/Follow/request`,
 	answerFollowRequest: () => `/api/Follow/answer`,
+	getFollowUsers: (data: any) => `/api/Follow/users-list?${qs.stringify(data, { skipNulls: true })}`,
+	unfollowUser: () => `/api/Follow/unfollow`,
 
 	/** About */
     getOwnAbout: () => '/api/Abouts/about',

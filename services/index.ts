@@ -66,6 +66,11 @@ export const searchUsersService: IRequestModel = (data: any) =>
 export const getUserProfileCardService: IRequestModel = (data: any) =>
 	ApiRequest.get(endpoints.getUserProfileCard(data));
 
+/** followers */
+export const getFollowUsersService: IRequestModel = (data: any) =>
+	ApiRequest.get(endpoints.getFollowUsers(data));
+export const unfollowUserService: IRequestModel = (data: any) =>
+	ApiRequest.post(endpoints.unfollowUser(), data);
 export const followUserService: IRequestModel = (data: any) =>
 	ApiRequest.post(endpoints.createFollowRequest(), data);
 export const answerFollowRequestService: IRequestModel = (data: any) =>
