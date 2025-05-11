@@ -26,15 +26,6 @@ interface AboutData {
   birthDate?: string | null | undefined;
 }
 
-interface Friend {
-	userId: string;  // Guid in TypeScript is represented as string
-	fullName: string;
-	userName: string;
-	isFollower: boolean; // Kullanıcıyı takip eden kişi mi?
-	isFollowing: boolean; // Kullanıcıyı takip ediyor mu?
-	profilePicture?: string; // Optional for backward compatibility
-}
-
 const UserProfile = ({ userId }: UserProfileProps) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("posts");
